@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { HomePage } from './components/home/HomePage';
 import { Header } from './components/layout/Header';
 import { SVGCanvas } from './components/graph/SVGCanvas';
 import { MasterToolbar } from './components/controls/MasterToolbar';
@@ -14,6 +15,9 @@ import type { Edge } from './core/types';
 import './styles/global.css';
 
 export function App() {
+  const [currentView, setCurrentView] = useState<'HOME' | 'STUDIO'>(() => {
+    return window.location.hash.startsWith('#studio') ? 'STUDIO' : 'HOME';
+  });
   const [viewMode, setViewMode] = useState<'SIDE_BY_SIDE' | 'SINGLE_KRUSKAL' | 'SINGLE_PRIM'>('SIDE_BY_SIDE');
   const [isGuideOpen, setIsGuideOpen] = useState<boolean>(false);
   const [editingEdge, setEditingEdge] = useState<Edge | null>(null);
@@ -29,12 +33,47 @@ export function App() {
     mode,
     selectedVertexId,
     setSelectedVertexId,
+    loadPreset,
     addVertex,
     addEdge,
     moveVertex,
     updateEdgeWeight,
     deleteEdge,
   } = graphState;
+
+  // Sync view state with browser hash
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (window.location.hash.startsWith('#studio')) {
+        setCurrentView('STUDIO');
+      } else if (
+        window.location.hash === '' ||
+        window.location.hash === '#home' ||
+        window.location.hash === '#/' ||
+        window.location.hash.startsWith('#workflow') ||
+        window.location.hash.startsWith('#theory') ||
+        window.location.hash.startsWith('#presets') ||
+        window.location.hash.startsWith('#shortcuts')
+      ) {
+        setCurrentView('HOME');
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  const handleLaunchStudio = (presetId?: string) => {
+    if (presetId) {
+      loadPreset(presetId);
+    }
+    setCurrentView('STUDIO');
+    window.location.hash = '#studio';
+  };
+
+  const handleNavigateHome = () => {
+    setCurrentView('HOME');
+    window.location.hash = '#home';
+  };
 
   // Real-time pure algorithm trace generation
   const kruskalTrace = useMemo(() => runKruskal(graph), [graph]);
@@ -46,11 +85,11 @@ export function App() {
 
   const maxTotalSteps = Math.max(kruskalTrace.steps.length, primTrace.steps.length);
 
-  // Keyboard shortcut handlers
+  // Keyboard shortcut handlers (active only inside Visualizer Studio)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore keybindings if user is inside an input modal
-      if (editingEdge || isGuideOpen) return;
+      // Ignore keybindings if user is on Home page or inside an input modal
+      if (currentView !== 'STUDIO' || editingEdge || isGuideOpen) return;
 
       if (e.code === 'Space') {
         e.preventDefault();
@@ -78,7 +117,7 @@ export function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [editingEdge, isGuideOpen, kruskalPlayback, primPlayback]);
+  }, [currentView, editingEdge, isGuideOpen, kruskalPlayback, primPlayback]);
 
   // Canvas Interactions
   const handleCanvasClick = (x: number, y: number) => {
@@ -117,10 +156,19 @@ export function App() {
 
   const currentDockHeight = isDockCollapsed ? 38 : dockHeight;
 
+  if (currentView === 'HOME') {
+    return <HomePage onLaunchStudio={handleLaunchStudio} />;
+  }
+
   return (
     <div className="studio-dashboard">
       {/* 1. Header Navigation Bar */}
-      <Header viewMode={viewMode} setViewMode={setViewMode} onOpenInfo={() => setIsGuideOpen(true)} />
+      <Header
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        onOpenInfo={() => setIsGuideOpen(true)}
+        onNavigateHome={handleNavigateHome}
+      />
 
       {/* 2. Graph Editor Control Bar */}
       <GraphEditorToolbar
