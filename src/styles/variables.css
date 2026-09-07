@@ -1,0 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* Stitch Design System - Technical Minimalism Tokens */
+  
+  /* Color Palette - Functional & Semantic */
+  --bg-primary: #0f172a;           /* Canvas dark base */
+  --bg-secondary: #1e293b;         /* Sidebar & utility panel surface */
+  --bg-card: #1e293b;              /* Panel container fill */
+  --bg-surface-elevated: #334155;  /* Hover / elevated card fill */
+  
+  /* Stitch Semantic Tokens */
+  --color-primary: #3b82f6;        /* Active / Considered state & primary actions */
+  --color-primary-hover: #2563eb;
+  --color-success: #10b981;        /* Accepted MST edge state */
+  --color-error: #ef4444;          /* Rejected cycle edge state */
+  --color-warning: #f59e0b;        /* Disconnected MSF state */
+
+  /* Graph Element State Colors */
+  --edge-default: #64748b;
+  --edge-considering: #3b82f6;     /* Primary blue for active edge */
+  --edge-accepted: #10b981;        /* Success green for MST edge */
+  --edge-rejected: #ef4444;        /* Error red for rejected edge */
+
+  --node-bg-default: #1e293b;
+  --node-border-default: #64748b;
+  --node-bg-visited: #1e3a8a;
+  --node-border-visited: #3b82f6;
+
+  /* Low-Contrast Outlines & Borders (Stitch Standard) */
+  --border-subtle: #334155;
+  --border-light: #475569;
+  --border-active: #3b82f6;
+
+  /* Typography (Stitch Specification) */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Text Hierarchy */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-inverse: #0f172a;
+
+  /* Stitch Soft-Square Radius (4px / 0.25rem universal default) */
+  --radius-sm: 2px;
+  --radius-md: 4px;                /* Universal Stitch UI corner radius */
+  --radius-lg: 6px;
+  --radius-full: 9999px;           /* Exclusively for circular graph nodes & pill badges */
+
+  /* Layout & Grid Metrics */
+  --sidebar-width: 280px;
+  --toolbar-height: 48px;
+
+  /* Low-Contrast Diffused Shadow (Stitch Tonal Layering) */
+  --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-active: 0 0 0 2px rgba(59, 130, 246, 0.4);
+}
