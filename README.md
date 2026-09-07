@@ -9,6 +9,7 @@
 [![Vite](https://img.shields.io/badge/Vite-8.2-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Vitest](https://img.shields.io/badge/Vitest-4.1-FCC72B?style=flat-square&logo=vitest&logoColor=black)](https://vitest.dev/)
 [![Oxlint](https://img.shields.io/badge/Linter-Oxlint-EC5990?style=flat-square&logo=oxc&logoColor=white)](https://oxc.rs/)
+[![CI](https://github.com/bugOpsX/Graphify/actions/workflows/ci.yml/badge.svg)](https://github.com/bugOpsX/Graphify/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 
 Explore, build, and benchmark **Kruskal's** and **Prim's** algorithms side-by-side in real time with synchronized execution, internal data structure inspection, and interactive graph editing.

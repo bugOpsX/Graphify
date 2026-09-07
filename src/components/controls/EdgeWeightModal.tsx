@@ -15,9 +15,15 @@ export const EdgeWeightModal: React.FC<EdgeWeightModalProps> = ({
   onUpdateWeight,
   onDeleteEdge,
 }) => {
-  if (!edge) return null;
+  const [weightInput, setWeightInput] = useState<string>(edge ? String(edge.weight) : '');
 
-  const [weightInput, setWeightInput] = useState<string>(String(edge.weight));
+  React.useEffect(() => {
+    if (edge) {
+      setWeightInput(String(edge.weight));
+    }
+  }, [edge]);
+
+  if (!edge) return null;
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
