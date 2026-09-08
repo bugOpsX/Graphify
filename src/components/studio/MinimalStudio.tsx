@@ -21,6 +21,7 @@ import { StepExplanationView } from '../education/StepExplanationView';
 import { DataStructuresView } from '../education/DataStructuresView';
 import { MetricComparisonTable } from '../comparison/MetricComparisonTable';
 import { VerticalSplitResizeHandle } from '../layout/VerticalSplitResizeHandle';
+import { HorizontalSplitResizeHandle } from '../layout/HorizontalSplitResizeHandle';
 import { MasterToolbar } from '../controls/MasterToolbar';
 import { InspectorDock } from '../education/InspectorDock';
 import type { GraphStateControls } from '../../visualization/useGraphState';
@@ -70,6 +71,7 @@ export const MinimalStudio: React.FC<MinimalStudioProps> = ({
 
   const [isPresetsMenuOpen, setIsPresetsMenuOpen] = useState<boolean>(false);
   const [splitWidth, setSplitWidth] = useState<number>(460);
+  const [inspectorHeight, setInspectorHeight] = useState<number>(250);
 
   // Tab selections in side-by-side mode cards
   const [kruskalTab, setKruskalTab] = useState<'EXPLANATION' | 'DSU' | 'METRICS'>('EXPLANATION');
@@ -384,6 +386,12 @@ export const MinimalStudio: React.FC<MinimalStudioProps> = ({
               />
             </div>
 
+            {/* Draggable Slidebar between Canvas and Information Panel */}
+            <HorizontalSplitResizeHandle
+              inspectorHeight={inspectorHeight}
+              onInspectorHeightChange={setInspectorHeight}
+            />
+
             {/* In-Card Playback Toolbar */}
             <div className="mst-card-playback-bar">
               <div className="mst-playback-left">
@@ -474,10 +482,36 @@ export const MinimalStudio: React.FC<MinimalStudioProps> = ({
               >
                 Metrics
               </button>
+
+              {/* Right: Height Slide Presets */}
+              <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginRight: '2px' }}>Height:</span>
+                <button
+                  className={`mst-height-pill ${inspectorHeight <= 180 ? 'active' : ''}`}
+                  onClick={() => setInspectorHeight(160)}
+                  title="Compact information view (160px)"
+                >
+                  Compact
+                </button>
+                <button
+                  className={`mst-height-pill ${inspectorHeight > 180 && inspectorHeight <= 300 ? 'active' : ''}`}
+                  onClick={() => setInspectorHeight(250)}
+                  title="Normal information view (250px)"
+                >
+                  Normal
+                </button>
+                <button
+                  className={`mst-height-pill ${inspectorHeight > 300 ? 'active' : ''}`}
+                  onClick={() => setInspectorHeight(380)}
+                  title="Expanded information view (380px)"
+                >
+                  Expanded
+                </button>
+              </div>
             </div>
 
             {/* In-Card Tab Body */}
-            <div className="mst-card-inspector-content">
+            <div className="mst-card-inspector-content" style={{ height: `${inspectorHeight}px` }}>
               {kruskalTab === 'EXPLANATION' && (
                 <StepExplanationView
                   graph={graph}
@@ -534,6 +568,12 @@ export const MinimalStudio: React.FC<MinimalStudioProps> = ({
                 onVertexDelete={handleDeleteVertex}
               />
             </div>
+
+            {/* Draggable Slidebar between Canvas and Information Panel */}
+            <HorizontalSplitResizeHandle
+              inspectorHeight={inspectorHeight}
+              onInspectorHeightChange={setInspectorHeight}
+            />
 
             {/* In-Card Playback Toolbar */}
             <div className="mst-card-playback-bar">
@@ -625,10 +665,36 @@ export const MinimalStudio: React.FC<MinimalStudioProps> = ({
               >
                 Metrics
               </button>
+
+              {/* Right: Height Slide Presets */}
+              <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginRight: '2px' }}>Height:</span>
+                <button
+                  className={`mst-height-pill ${inspectorHeight <= 180 ? 'active' : ''}`}
+                  onClick={() => setInspectorHeight(160)}
+                  title="Compact information view (160px)"
+                >
+                  Compact
+                </button>
+                <button
+                  className={`mst-height-pill ${inspectorHeight > 180 && inspectorHeight <= 300 ? 'active' : ''}`}
+                  onClick={() => setInspectorHeight(250)}
+                  title="Normal information view (250px)"
+                >
+                  Normal
+                </button>
+                <button
+                  className={`mst-height-pill ${inspectorHeight > 300 ? 'active' : ''}`}
+                  onClick={() => setInspectorHeight(380)}
+                  title="Expanded information view (380px)"
+                >
+                  Expanded
+                </button>
+              </div>
             </div>
 
             {/* In-Card Tab Body */}
-            <div className="mst-card-inspector-content">
+            <div className="mst-card-inspector-content" style={{ height: `${inspectorHeight}px` }}>
               {primTab === 'EXPLANATION' && (
                 <StepExplanationView
                   graph={graph}
