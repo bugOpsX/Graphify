@@ -48,6 +48,39 @@ body {
   min-height: 0;
 }
 
+/* Split-Screen Individual Algorithm Layout */
+.studio-split-layout {
+  flex: 1;
+  display: flex;
+  gap: 0.5rem;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.studio-split-canvas {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.studio-split-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.studio-split-dock {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
 .studio-dock {
   transition: height 100ms ease-out;
   overflow: hidden;

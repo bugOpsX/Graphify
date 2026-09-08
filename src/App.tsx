@@ -8,6 +8,7 @@ import { InspectorDock } from './components/education/InspectorDock';
 import { GuideModal } from './components/education/GuideModal';
 import { EdgeWeightModal } from './components/controls/EdgeWeightModal';
 import { StageResizeHandle } from './components/layout/StageResizeHandle';
+import { VerticalSplitResizeHandle } from './components/layout/VerticalSplitResizeHandle';
 import { useGraphState } from './visualization/useGraphState';
 import { usePlayback } from './visualization/usePlayback';
 import { runKruskal, runPrim } from './algorithms';
@@ -26,6 +27,8 @@ export function App() {
   // Dynamic canvas vs inspector dock sliding split state
   const [dockHeight, setDockHeight] = useState<number>(260);
   const [isDockCollapsed, setIsDockCollapsed] = useState<boolean>(false);
+  // Dynamic horizontal split state for individual algorithm view
+  const [splitWidth, setSplitWidth] = useState<number>(490);
 
   const graphState = useGraphState('preset-standard');
   const {
@@ -93,31 +96,57 @@ export function App() {
 
       if (e.code === 'Space') {
         e.preventDefault();
-        if (kruskalPlayback.isPlaying || primPlayback.isPlaying) {
-          kruskalPlayback.pause();
-          primPlayback.pause();
+        if (viewMode === 'SINGLE_KRUSKAL') {
+          if (kruskalPlayback.isPlaying) kruskalPlayback.pause();
+          else kruskalPlayback.play();
+        } else if (viewMode === 'SINGLE_PRIM') {
+          if (primPlayback.isPlaying) primPlayback.pause();
+          else primPlayback.play();
         } else {
-          kruskalPlayback.play();
-          primPlayback.play();
+          if (kruskalPlayback.isPlaying || primPlayback.isPlaying) {
+            kruskalPlayback.pause();
+            primPlayback.pause();
+          } else {
+            kruskalPlayback.play();
+            primPlayback.play();
+          }
         }
       } else if (e.code === 'ArrowRight') {
         e.preventDefault();
-        kruskalPlayback.stepForward();
-        primPlayback.stepForward();
+        if (viewMode === 'SINGLE_KRUSKAL') {
+          kruskalPlayback.stepForward();
+        } else if (viewMode === 'SINGLE_PRIM') {
+          primPlayback.stepForward();
+        } else {
+          kruskalPlayback.stepForward();
+          primPlayback.stepForward();
+        }
       } else if (e.code === 'ArrowLeft') {
         e.preventDefault();
-        kruskalPlayback.stepBackward();
-        primPlayback.stepBackward();
+        if (viewMode === 'SINGLE_KRUSKAL') {
+          kruskalPlayback.stepBackward();
+        } else if (viewMode === 'SINGLE_PRIM') {
+          primPlayback.stepBackward();
+        } else {
+          kruskalPlayback.stepBackward();
+          primPlayback.stepBackward();
+        }
       } else if (e.key.toLowerCase() === 'r') {
         e.preventDefault();
-        kruskalPlayback.reset();
-        primPlayback.reset();
+        if (viewMode === 'SINGLE_KRUSKAL') {
+          kruskalPlayback.reset();
+        } else if (viewMode === 'SINGLE_PRIM') {
+          primPlayback.reset();
+        } else {
+          kruskalPlayback.reset();
+          primPlayback.reset();
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentView, editingEdge, isGuideOpen, kruskalPlayback, primPlayback]);
+  }, [currentView, editingEdge, isGuideOpen, kruskalPlayback, primPlayback, viewMode]);
 
   // Canvas Interactions
   const handleCanvasClick = (x: number, y: number) => {
@@ -179,98 +208,143 @@ export function App() {
 
       {/* 3. Main Side-by-Side Visualizer Stage */}
       {viewMode === 'SIDE_BY_SIDE' && (
-        <div className="studio-stage">
-          <SVGCanvas
-            graph={graph}
-            currentStep={kruskalStep}
-            mode={mode}
-            selectedVertexId={selectedVertexId}
-            title="Kruskal's Algorithm"
-            badge="Edge-Centric DSU"
-            onCanvasClick={handleCanvasClick}
-            onVertexClick={handleVertexClick}
-            onVertexMove={moveVertex}
-            onEdgeClick={handleEdgeClick}
+        <>
+          <div className="studio-stage">
+            <SVGCanvas
+              graph={graph}
+              currentStep={kruskalStep}
+              mode={mode}
+              selectedVertexId={selectedVertexId}
+              title="Kruskal's Algorithm"
+              badge="Edge-Centric DSU"
+              onCanvasClick={handleCanvasClick}
+              onVertexClick={handleVertexClick}
+              onVertexMove={moveVertex}
+              onEdgeClick={handleEdgeClick}
+            />
+            <SVGCanvas
+              graph={graph}
+              currentStep={primStep}
+              mode={mode}
+              selectedVertexId={selectedVertexId}
+              title="Prim's Algorithm"
+              badge="Vertex-Centric Cut"
+              onCanvasClick={handleCanvasClick}
+              onVertexClick={handleVertexClick}
+              onVertexMove={moveVertex}
+              onEdgeClick={handleEdgeClick}
+            />
+          </div>
+
+          {/* Interactive Vertical Splitter / Slider Handle Bar */}
+          <StageResizeHandle
+            dockHeight={dockHeight}
+            onDockHeightChange={(newHeight) => {
+              setDockHeight(newHeight);
+              if (isDockCollapsed) setIsDockCollapsed(false);
+            }}
+            isCollapsed={isDockCollapsed}
+            onToggleCollapse={() => setIsDockCollapsed(!isDockCollapsed)}
           />
-          <SVGCanvas
-            graph={graph}
-            currentStep={primStep}
-            mode={mode}
-            selectedVertexId={selectedVertexId}
-            title="Prim's Algorithm"
-            badge="Vertex-Centric Cut"
-            onCanvasClick={handleCanvasClick}
-            onVertexClick={handleVertexClick}
-            onVertexMove={moveVertex}
-            onEdgeClick={handleEdgeClick}
+
+          {/* Unified Master Synchronized Control Bar */}
+          <MasterToolbar
+            kruskalPlayback={kruskalPlayback}
+            primPlayback={primPlayback}
+            totalSteps={maxTotalSteps}
+            currentAlgorithm="ALL"
           />
-        </div>
+
+          {/* Dynamic Resizable Bottom Inspector Dock */}
+          <div className="studio-dock" style={{ height: `${currentDockHeight}px`, flexShrink: 0 }}>
+            <InspectorDock
+              graph={graph}
+              kruskalTrace={kruskalTrace}
+              primTrace={primTrace}
+              kruskalStep={kruskalStep}
+              primStep={primStep}
+              kruskalStepIndex={kruskalPlayback.currentStepIndex}
+              primStepIndex={primPlayback.currentStepIndex}
+              viewMode="SIDE_BY_SIDE"
+            />
+          </div>
+        </>
       )}
 
-      {viewMode === 'SINGLE_KRUSKAL' && (
-        <div className="studio-stage-single">
-          <SVGCanvas
-            graph={graph}
-            currentStep={kruskalStep}
-            mode={mode}
-            selectedVertexId={selectedVertexId}
-            title="Kruskal's Algorithm View"
-            badge="Edge-Centric DSU"
-            onCanvasClick={handleCanvasClick}
-            onVertexClick={handleVertexClick}
-            onVertexMove={moveVertex}
-            onEdgeClick={handleEdgeClick}
+      {/* 4. Split-Screen Layout for Individual Algorithm Mode */}
+      {(viewMode === 'SINGLE_KRUSKAL' || viewMode === 'SINGLE_PRIM') && (
+        <div className="studio-split-layout">
+          {/* Left Column: Individual Algorithm Graph Canvas */}
+          <div className="studio-split-canvas">
+            {viewMode === 'SINGLE_KRUSKAL' ? (
+              <SVGCanvas
+                graph={graph}
+                currentStep={kruskalStep}
+                mode={mode}
+                selectedVertexId={selectedVertexId}
+                title="Kruskal's Algorithm View"
+                badge="Edge-Centric DSU"
+                onCanvasClick={handleCanvasClick}
+                onVertexClick={handleVertexClick}
+                onVertexMove={moveVertex}
+                onEdgeClick={handleEdgeClick}
+              />
+            ) : (
+              <SVGCanvas
+                graph={graph}
+                currentStep={primStep}
+                mode={mode}
+                selectedVertexId={selectedVertexId}
+                title="Prim's Algorithm View"
+                badge="Vertex-Centric Min-Heap Cut"
+                onCanvasClick={handleCanvasClick}
+                onVertexClick={handleVertexClick}
+                onVertexMove={moveVertex}
+                onEdgeClick={handleEdgeClick}
+              />
+            )}
+          </div>
+
+          {/* Draggable Vertical Splitter Handle */}
+          <VerticalSplitResizeHandle
+            splitWidth={splitWidth}
+            onSplitWidthChange={setSplitWidth}
+            position="right"
           />
+
+          {/* Right Column: Dedicated Playback Controls & Individual Algorithm Information */}
+          <div
+            className="studio-split-panel"
+            style={{ width: `${splitWidth}px`, flex: `0 0 ${splitWidth}px` }}
+          >
+            {/* Playback Controls Bar dedicated to the individual algorithm */}
+            <MasterToolbar
+              kruskalPlayback={kruskalPlayback}
+              primPlayback={primPlayback}
+              totalSteps={
+                viewMode === 'SINGLE_KRUSKAL'
+                  ? kruskalTrace.steps.length
+                  : primTrace.steps.length
+              }
+              currentAlgorithm={viewMode === 'SINGLE_KRUSKAL' ? 'KRUSKAL' : 'PRIM'}
+            />
+
+            {/* Individual Algorithm Inspector Panel */}
+            <div className="studio-split-dock">
+              <InspectorDock
+                graph={graph}
+                kruskalTrace={kruskalTrace}
+                primTrace={primTrace}
+                kruskalStep={kruskalStep}
+                primStep={primStep}
+                kruskalStepIndex={kruskalPlayback.currentStepIndex}
+                primStepIndex={primPlayback.currentStepIndex}
+                viewMode={viewMode}
+              />
+            </div>
+          </div>
         </div>
       )}
-
-      {viewMode === 'SINGLE_PRIM' && (
-        <div className="studio-stage-single">
-          <SVGCanvas
-            graph={graph}
-            currentStep={primStep}
-            mode={mode}
-            selectedVertexId={selectedVertexId}
-            title="Prim's Algorithm View"
-            badge="Vertex-Centric Min-Heap Cut"
-            onCanvasClick={handleCanvasClick}
-            onVertexClick={handleVertexClick}
-            onVertexMove={moveVertex}
-            onEdgeClick={handleEdgeClick}
-          />
-        </div>
-      )}
-
-      {/* 4. Interactive Vertical Splitter / Slider Handle Bar */}
-      <StageResizeHandle
-        dockHeight={dockHeight}
-        onDockHeightChange={(newHeight) => {
-          setDockHeight(newHeight);
-          if (isDockCollapsed) setIsDockCollapsed(false);
-        }}
-        isCollapsed={isDockCollapsed}
-        onToggleCollapse={() => setIsDockCollapsed(!isDockCollapsed)}
-      />
-
-      {/* 5. Unified Master Synchronized Control Bar */}
-      <MasterToolbar
-        kruskalPlayback={kruskalPlayback}
-        primPlayback={primPlayback}
-        totalSteps={maxTotalSteps}
-      />
-
-      {/* 6. Dynamic Resizable Bottom Inspector Dock */}
-      <div className="studio-dock" style={{ height: `${currentDockHeight}px`, flexShrink: 0 }}>
-        <InspectorDock
-          graph={graph}
-          kruskalTrace={kruskalTrace}
-          primTrace={primTrace}
-          kruskalStep={kruskalStep}
-          primStep={primStep}
-          kruskalStepIndex={kruskalPlayback.currentStepIndex}
-          primStepIndex={primPlayback.currentStepIndex}
-        />
-      </div>
 
       {/* Modals */}
       <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />

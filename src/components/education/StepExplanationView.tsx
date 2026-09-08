@@ -11,6 +11,7 @@ interface StepExplanationViewProps {
   primStep: AlgorithmStep;
   kruskalStepIndex: number;
   primStepIndex: number;
+  algorithm?: 'ALL' | 'KRUSKAL' | 'PRIM';
 }
 
 export const StepExplanationView: React.FC<StepExplanationViewProps> = ({
@@ -21,6 +22,7 @@ export const StepExplanationView: React.FC<StepExplanationViewProps> = ({
   primStep,
   kruskalStepIndex,
   primStepIndex,
+  algorithm = 'ALL',
 }) => {
   const vertexMap = new Map(graph.vertices.map((v) => [v.id, v.label]));
   const edgeMap = new Map(graph.edges.map((e) => [e.id, e]));
@@ -423,6 +425,22 @@ export const StepExplanationView: React.FC<StepExplanationViewProps> = ({
       </div>
     );
   };
+
+  if (algorithm === 'KRUSKAL') {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
+        {renderKruskalCard()}
+      </div>
+    );
+  }
+
+  if (algorithm === 'PRIM') {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
+        {renderPrimCard()}
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', height: '100%' }}>
