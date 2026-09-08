@@ -1,58 +1,115 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-:root {
-  /* Stitch Design System - Technical Minimalism Tokens */
-  
-  /* Color Palette - Functional & Semantic */
-  --bg-primary: #0f172a;           /* Canvas dark base */
-  --bg-secondary: #1e293b;         /* Sidebar & utility panel surface */
-  --bg-card: #1e293b;              /* Panel container fill */
-  --bg-surface-elevated: #334155;  /* Hover / elevated card fill */
-  
-  /* Stitch Semantic Tokens */
-  --color-primary: #3b82f6;        /* Active / Considered state & primary actions */
+/* Default Dark Theme - Sleek Minimalist Studio */
+:root, :root[data-theme="dark"] {
+  --bg-primary: #090d16;
+  --bg-secondary: #0f172a;
+  --bg-card: #111827;
+  --bg-card-subtle: #162032;
+  --bg-surface-elevated: #1e293b;
+  --bg-hover: rgba(255, 255, 255, 0.05);
+
+  --color-primary: #3b82f6;
   --color-primary-hover: #2563eb;
-  --color-success: #10b981;        /* Accepted MST edge state */
-  --color-error: #ef4444;          /* Rejected cycle edge state */
-  --color-warning: #f59e0b;        /* Disconnected MSF state */
+  --color-primary-subtle: rgba(59, 130, 246, 0.15);
+  --color-success: #10b981;
+  --color-error: #ef4444;
+  --color-error-subtle: rgba(239, 68, 68, 0.15);
+  --color-warning: #f59e0b;
 
-  /* Graph Element State Colors */
-  --edge-default: #64748b;
-  --edge-considering: #3b82f6;     /* Primary blue for active edge */
-  --edge-accepted: #10b981;        /* Success green for MST edge */
-  --edge-rejected: #ef4444;        /* Error red for rejected edge */
+  --edge-default: #334155;
+  --edge-considering: #3b82f6;
+  --edge-accepted: #3b82f6;
+  --edge-rejected: #ef4444;
 
-  --node-bg-default: #1e293b;
-  --node-border-default: #64748b;
+  --node-bg-default: #111827;
+  --node-border-default: #3b82f6;
+  --node-text: #f8fafc;
   --node-bg-visited: #1e3a8a;
-  --node-border-visited: #3b82f6;
+  --node-border-visited: #60a5fa;
 
-  /* Low-Contrast Outlines & Borders (Stitch Standard) */
-  --border-subtle: #334155;
-  --border-light: #475569;
+  --border-subtle: #1e293b;
+  --border-light: #334155;
   --border-active: #3b82f6;
 
-  /* Typography (Stitch Specification) */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-
-  /* Text Hierarchy */
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
-  --text-inverse: #0f172a;
+  --canvas-bg: #090d16;
+  --canvas-grid-stroke: rgba(255, 255, 255, 0.07);
+  --canvas-grid: rgba(255, 255, 255, 0.07);
+  --node-visited-text: #ffffff;
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.25);
+  --shadow-button: 0 2px 8px rgba(0, 0, 0, 0.2);
 
-  /* Stitch Soft-Square Radius (4px / 0.25rem universal default) */
-  --radius-sm: 2px;
-  --radius-md: 4px;                /* Universal Stitch UI corner radius */
-  --radius-lg: 6px;
-  --radius-full: 9999px;           /* Exclusively for circular graph nodes & pill badges */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 
-  /* Layout & Grid Metrics */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-full: 9999px;
+
   --sidebar-width: 280px;
   --toolbar-height: 48px;
-
-  /* Low-Contrast Diffused Shadow (Stitch Tonal Layering) */
   --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.15);
   --shadow-active: 0 0 0 2px rgba(59, 130, 246, 0.4);
+}
+
+/* Crisp Minimalist Light Theme */
+:root[data-theme="light"] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-subtle: #f1f5f9;
+  --bg-surface-elevated: #e2e8f0;
+  --bg-hover: rgba(0, 0, 0, 0.04);
+
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-subtle: rgba(37, 99, 235, 0.1);
+  --color-success: #059669;
+  --color-error: #dc2626;
+  --color-error-subtle: rgba(220, 38, 38, 0.1);
+  --color-warning: #d97706;
+
+  --edge-default: #94a3b8;
+  --edge-considering: #2563eb;
+  --edge-accepted: #2563eb;
+  --edge-rejected: #dc2626;
+
+  --node-bg-default: #ffffff;
+  --node-border-default: #2563eb;
+  --node-text: #0f172a;
+  --node-bg-visited: #dbeafe;
+  --node-border-visited: #1d4ed8;
+  --node-visited-text: #1e3a8a;
+
+  --border-subtle: #e2e8f0;
+  --border-light: #cbd5e1;
+  --border-active: #2563eb;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --text-inverse: #ffffff;
+
+  --canvas-bg: #f8fafc;
+  --canvas-grid-stroke: rgba(15, 23, 42, 0.08);
+  --canvas-grid: rgba(15, 23, 42, 0.08);
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.05);
+  --shadow-button: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-full: 9999px;
+
+  --sidebar-width: 280px;
+  --toolbar-height: 48px;
+  --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-active: 0 0 0 2px rgba(37, 99, 235, 0.35);
 }

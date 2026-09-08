@@ -1,107 +1,203 @@
-import { useState, useMemo, useEffect } from 'react';
-import { HomePage } from './components/home/HomePage';
-import { Header } from './components/layout/Header';
-import { SVGCanvas } from './components/graph/SVGCanvas';
-import { MasterToolbar } from './components/controls/MasterToolbar';
-import { GraphEditorToolbar } from './components/controls/GraphEditorToolbar';
-import { InspectorDock } from './components/education/InspectorDock';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { Navbar } from './components/layout/Navbar';
+import { MinimalHome } from './components/home/MinimalHome';
+import { MinimalStudio } from './components/studio/MinimalStudio';
+import { PresetsModal } from './components/education/PresetsModal';
 import { GuideModal } from './components/education/GuideModal';
 import { EdgeWeightModal } from './components/controls/EdgeWeightModal';
-import { StageResizeHandle } from './components/layout/StageResizeHandle';
-import { VerticalSplitResizeHandle } from './components/layout/VerticalSplitResizeHandle';
 import { useGraphState } from './visualization/useGraphState';
 import { usePlayback } from './visualization/usePlayback';
 import { runKruskal, runPrim } from './algorithms';
 import type { Edge } from './core/types';
+import './styles/variables.css';
+import './styles/minimal.css';
 import './styles/global.css';
 
 export function App() {
   const [currentView, setCurrentView] = useState<'HOME' | 'STUDIO'>(() => {
-    return window.location.hash.startsWith('#studio') ? 'STUDIO' : 'HOME';
+    const hash = window.location.hash;
+    return hash.startsWith('#studio') || hash.startsWith('#visualizer') ? 'STUDIO' : 'HOME';
   });
+
+  const [activeSection, setActiveSection] = useState<'home' | 'about' | 'faqs'>('home');
   const [viewMode, setViewMode] = useState<'SIDE_BY_SIDE' | 'SINGLE_KRUSKAL' | 'SINGLE_PRIM'>('SIDE_BY_SIDE');
+  const [isPresetsOpen, setIsPresetsOpen] = useState<boolean>(false);
   const [isGuideOpen, setIsGuideOpen] = useState<boolean>(false);
   const [editingEdge, setEditingEdge] = useState<Edge | null>(null);
   const [startVertexId, setStartVertexId] = useState<string | undefined>(undefined);
 
-  // Dynamic canvas vs inspector dock sliding split state
-  const [dockHeight, setDockHeight] = useState<number>(260);
-  const [isDockCollapsed, setIsDockCollapsed] = useState<boolean>(false);
-  // Dynamic horizontal split state for individual algorithm view
-  const [splitWidth, setSplitWidth] = useState<number>(490);
+  // Theme Management (Default Dark, toggles to Light)
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const saved = localStorage.getItem('mst-theme');
+    return saved === 'light' ? 'light' : 'dark';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('mst-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
 
   const graphState = useGraphState('preset-standard');
   const {
     graph,
-    mode,
-    selectedVertexId,
-    setSelectedVertexId,
     loadPreset,
-    addVertex,
-    addEdge,
-    moveVertex,
     updateEdgeWeight,
     deleteEdge,
+    deleteVertex,
+    selectedVertexId,
+    setSelectedVertexId,
   } = graphState;
 
-  // Sync view state with browser hash
+  // Sync with browser hash changes
   useEffect(() => {
     const handleHashChange = () => {
-      if (window.location.hash.startsWith('#studio')) {
+      const hash = window.location.hash;
+      if (hash.startsWith('#studio') || hash.startsWith('#visualizer')) {
         setCurrentView('STUDIO');
-      } else if (
-        window.location.hash === '' ||
-        window.location.hash === '#home' ||
-        window.location.hash === '#/' ||
-        window.location.hash.startsWith('#workflow') ||
-        window.location.hash.startsWith('#theory') ||
-        window.location.hash.startsWith('#presets') ||
-        window.location.hash.startsWith('#shortcuts')
-      ) {
+      } else if (hash.startsWith('#about')) {
+        setCurrentView('HOME');
+        setTimeout(() => handleScrollToSection('about'), 50);
+      } else if (hash.startsWith('#faqs') || hash.startsWith('#faq')) {
+        setCurrentView('HOME');
+        setTimeout(() => handleScrollToSection('faqs'), 50);
+      } else if (hash === '' || hash === '#' || hash === '#home' || hash === '#hero') {
         setCurrentView('HOME');
       }
     };
+
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  const handleLaunchStudio = (presetId?: string) => {
-    if (presetId) {
-      loadPreset(presetId);
-    }
-    setCurrentView('STUDIO');
-    window.location.hash = '#studio';
-  };
-
-  const handleNavigateHome = () => {
+  // Update hash when navigating
+  const navigateHome = useCallback(() => {
     setCurrentView('HOME');
-    window.location.hash = '#home';
-  };
+    window.location.hash = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setActiveSection('home');
+  }, []);
 
-  // Real-time pure algorithm trace generation
-  const kruskalTrace = useMemo(() => runKruskal(graph), [graph]);
-  const primTrace = useMemo(() => runPrim(graph, { startVertexId }), [graph, startVertexId]);
+  const navigateStudio = useCallback(() => {
+    setCurrentView('STUDIO');
+    window.location.hash = 'studio';
+  }, []);
 
-  // Playback control hooks for Kruskal and Prim
+  // Sync body and document element class for studio vs home mode
+  useEffect(() => {
+    if (currentView === 'STUDIO') {
+      document.body.classList.add('is-studio');
+      document.documentElement.classList.add('is-studio');
+    } else {
+      document.body.classList.remove('is-studio');
+      document.documentElement.classList.remove('is-studio');
+    }
+  }, [currentView]);
+
+  // Scroll to section on home page
+  const handleScrollToSection = useCallback((sectionId: string) => {
+    if (sectionId === 'hero' || sectionId === 'home') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setActiveSection('home');
+      return;
+    }
+
+    const el = document.getElementById(sectionId);
+    if (el) {
+      const navHeight = 54;
+      const targetY = el.getBoundingClientRect().top + window.scrollY - navHeight;
+      window.scrollTo({ top: targetY, behavior: 'smooth' });
+      if (sectionId === 'about' || sectionId === 'faqs') {
+        setActiveSection(sectionId as 'about' | 'faqs');
+      }
+    }
+  }, []);
+
+  // Track active section on scroll when on HOME
+  useEffect(() => {
+    if (currentView !== 'HOME') return;
+
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      if (scrollY < 180) {
+        setActiveSection('home');
+        return;
+      }
+
+      // If reached bottom of page, highlight faqs
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 80) {
+        setActiveSection('faqs');
+        return;
+      }
+
+      const faqsEl = document.getElementById('faqs');
+      const aboutEl = document.getElementById('about');
+
+      if (faqsEl && faqsEl.getBoundingClientRect().top <= 140) {
+        setActiveSection('faqs');
+      } else if (aboutEl && aboutEl.getBoundingClientRect().top <= 140) {
+        setActiveSection('about');
+      } else {
+        setActiveSection('home');
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [currentView]);
+
+  // Compute Traces
+  const kruskalTrace = useMemo(() => {
+    return runKruskal(graph);
+  }, [graph]);
+
+  const effectiveStartVertex = startVertexId || graph.vertices[0]?.id;
+  const primTrace = useMemo(() => {
+    return runPrim(graph, { startVertexId: effectiveStartVertex });
+  }, [graph, effectiveStartVertex]);
+
+  // Playback Hooks
   const kruskalPlayback = usePlayback(kruskalTrace);
   const primPlayback = usePlayback(primTrace);
 
-  const maxTotalSteps = Math.max(kruskalTrace.steps.length, primTrace.steps.length);
-
-  // Keyboard shortcut handlers (active only inside Visualizer Studio)
+  // Global Keyboard Navigation
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore keybindings if user is on Home page or inside an input modal
-      if (currentView !== 'STUDIO' || editingEdge || isGuideOpen) return;
+    if (currentView !== 'STUDIO') return;
 
-      if (e.code === 'Space') {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger shortcuts inside text inputs or dialogs
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        editingEdge !== null ||
+        isPresetsOpen ||
+        isGuideOpen
+      ) {
+        return;
+      }
+
+      if (e.key === 'Backspace' || e.key === 'Delete' || e.code === 'Backspace' || e.code === 'Delete') {
+        if (selectedVertexId && graph.vertices.some((v) => v.id === selectedVertexId)) {
+          e.preventDefault();
+          const targetId = selectedVertexId;
+          if (startVertexId === targetId) {
+            const remaining = graph.vertices.filter((v) => v.id !== targetId);
+            setStartVertexId(remaining.length > 0 ? remaining[0].id : undefined);
+          }
+          deleteVertex(targetId);
+          setSelectedVertexId(null);
+          kruskalPlayback.reset();
+          primPlayback.reset();
+        }
+      } else if (e.code === 'Space') {
         e.preventDefault();
         if (viewMode === 'SINGLE_KRUSKAL') {
-          if (kruskalPlayback.isPlaying) kruskalPlayback.pause();
-          else kruskalPlayback.play();
+          kruskalPlayback.togglePlay();
         } else if (viewMode === 'SINGLE_PRIM') {
-          if (primPlayback.isPlaying) primPlayback.pause();
-          else primPlayback.play();
+          primPlayback.togglePlay();
         } else {
           if (kruskalPlayback.isPlaying || primPlayback.isPlaying) {
             kruskalPlayback.pause();
@@ -131,7 +227,7 @@ export function App() {
           kruskalPlayback.stepBackward();
           primPlayback.stepBackward();
         }
-      } else if (e.key.toLowerCase() === 'r') {
+      } else if (e.code === 'KeyR' && !e.ctrlKey && !e.metaKey) {
         e.preventDefault();
         if (viewMode === 'SINGLE_KRUSKAL') {
           kruskalPlayback.reset();
@@ -146,32 +242,20 @@ export function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentView, editingEdge, isGuideOpen, kruskalPlayback, primPlayback, viewMode]);
-
-  // Canvas Interactions
-  const handleCanvasClick = (x: number, y: number) => {
-    if (mode === 'ADD_VERTEX') {
-      addVertex(x, y);
-    }
-  };
-
-  const handleVertexClick = (vertexId: string) => {
-    if (mode === 'ADD_EDGE') {
-      if (selectedVertexId === null) {
-        // Select Node 1
-        setSelectedVertexId(vertexId);
-      } else if (selectedVertexId !== vertexId) {
-        // Connect Node 1 to Node 2
-        addEdge(selectedVertexId, vertexId, 5); // Default weight 5
-        setSelectedVertexId(null);
-      } else {
-        // Clicked same node twice -> toggle deselect
-        setSelectedVertexId(null);
-      }
-    } else {
-      setSelectedVertexId(vertexId);
-    }
-  };
+  }, [
+    currentView,
+    viewMode,
+    selectedVertexId,
+    startVertexId,
+    graph.vertices,
+    deleteVertex,
+    setSelectedVertexId,
+    kruskalPlayback,
+    primPlayback,
+    editingEdge,
+    isPresetsOpen,
+    isGuideOpen,
+  ]);
 
   const handleEdgeClick = (edgeId: string) => {
     const edge = graph.edges.find((e) => e.id === edgeId);
@@ -180,180 +264,86 @@ export function App() {
     }
   };
 
-  const kruskalStep = kruskalTrace.steps[kruskalPlayback.currentStepIndex] || kruskalTrace.steps[0];
-  const primStep = primTrace.steps[primPlayback.currentStepIndex] || primTrace.steps[0];
+  const handleSaveEdgeWeight = (newWeight: number) => {
+    if (editingEdge) {
+      updateEdgeWeight(editingEdge.id, newWeight);
+      setEditingEdge(null);
+      kruskalPlayback.reset();
+      primPlayback.reset();
+    }
+  };
 
-  const currentDockHeight = isDockCollapsed ? 38 : dockHeight;
-
-  if (currentView === 'HOME') {
-    return <HomePage onLaunchStudio={handleLaunchStudio} />;
-  }
+  const handleDeleteEdge = () => {
+    if (editingEdge) {
+      deleteEdge(editingEdge.id);
+      setEditingEdge(null);
+      kruskalPlayback.reset();
+      primPlayback.reset();
+    }
+  };
 
   return (
-    <div className="studio-dashboard">
-      {/* 1. Header Navigation Bar */}
-      <Header
-        viewMode={viewMode}
-        setViewMode={setViewMode}
-        onOpenInfo={() => setIsGuideOpen(true)}
-        onNavigateHome={handleNavigateHome}
+    <div className={`mst-app-root ${currentView === 'STUDIO' ? 'is-studio' : ''}`}>
+      {/* Universal Top Navigation Bar */}
+      <Navbar
+        currentView={currentView}
+        activeSection={activeSection}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        onNavigateHome={navigateHome}
+        onNavigateStudio={navigateStudio}
+        onScrollToSection={handleScrollToSection}
       />
 
-      {/* 2. Graph Editor Control Bar */}
-      <GraphEditorToolbar
-        graphState={graphState}
-        startVertexId={startVertexId}
-        onStartVertexChange={(vId) => setStartVertexId(vId)}
-      />
-
-      {/* 3. Main Side-by-Side Visualizer Stage */}
-      {viewMode === 'SIDE_BY_SIDE' && (
-        <>
-          <div className="studio-stage">
-            <SVGCanvas
-              graph={graph}
-              currentStep={kruskalStep}
-              mode={mode}
-              selectedVertexId={selectedVertexId}
-              title="Kruskal's Algorithm"
-              badge="Edge-Centric DSU"
-              onCanvasClick={handleCanvasClick}
-              onVertexClick={handleVertexClick}
-              onVertexMove={moveVertex}
-              onEdgeClick={handleEdgeClick}
-            />
-            <SVGCanvas
-              graph={graph}
-              currentStep={primStep}
-              mode={mode}
-              selectedVertexId={selectedVertexId}
-              title="Prim's Algorithm"
-              badge="Vertex-Centric Cut"
-              onCanvasClick={handleCanvasClick}
-              onVertexClick={handleVertexClick}
-              onVertexMove={moveVertex}
-              onEdgeClick={handleEdgeClick}
-            />
-          </div>
-
-          {/* Interactive Vertical Splitter / Slider Handle Bar */}
-          <StageResizeHandle
-            dockHeight={dockHeight}
-            onDockHeightChange={(newHeight) => {
-              setDockHeight(newHeight);
-              if (isDockCollapsed) setIsDockCollapsed(false);
-            }}
-            isCollapsed={isDockCollapsed}
-            onToggleCollapse={() => setIsDockCollapsed(!isDockCollapsed)}
-          />
-
-          {/* Unified Master Synchronized Control Bar */}
-          <MasterToolbar
-            kruskalPlayback={kruskalPlayback}
-            primPlayback={primPlayback}
-            totalSteps={maxTotalSteps}
-            currentAlgorithm="ALL"
-          />
-
-          {/* Dynamic Resizable Bottom Inspector Dock */}
-          <div className="studio-dock" style={{ height: `${currentDockHeight}px`, flexShrink: 0 }}>
-            <InspectorDock
-              graph={graph}
-              kruskalTrace={kruskalTrace}
-              primTrace={primTrace}
-              kruskalStep={kruskalStep}
-              primStep={primStep}
-              kruskalStepIndex={kruskalPlayback.currentStepIndex}
-              primStepIndex={primPlayback.currentStepIndex}
-              viewMode="SIDE_BY_SIDE"
-            />
-          </div>
-        </>
+      {/* View 1: Minimalist Home Screen */}
+      {currentView === 'HOME' && (
+        <MinimalHome
+          onOpenVisualizer={navigateStudio}
+          onOpenPresets={() => setIsPresetsOpen(true)}
+          onScrollToSection={handleScrollToSection}
+        />
       )}
 
-      {/* 4. Split-Screen Layout for Individual Algorithm Mode */}
-      {(viewMode === 'SINGLE_KRUSKAL' || viewMode === 'SINGLE_PRIM') && (
-        <div className="studio-split-layout">
-          {/* Left Column: Individual Algorithm Graph Canvas */}
-          <div className="studio-split-canvas">
-            {viewMode === 'SINGLE_KRUSKAL' ? (
-              <SVGCanvas
-                graph={graph}
-                currentStep={kruskalStep}
-                mode={mode}
-                selectedVertexId={selectedVertexId}
-                title="Kruskal's Algorithm View"
-                badge="Edge-Centric DSU"
-                onCanvasClick={handleCanvasClick}
-                onVertexClick={handleVertexClick}
-                onVertexMove={moveVertex}
-                onEdgeClick={handleEdgeClick}
-              />
-            ) : (
-              <SVGCanvas
-                graph={graph}
-                currentStep={primStep}
-                mode={mode}
-                selectedVertexId={selectedVertexId}
-                title="Prim's Algorithm View"
-                badge="Vertex-Centric Min-Heap Cut"
-                onCanvasClick={handleCanvasClick}
-                onVertexClick={handleVertexClick}
-                onVertexMove={moveVertex}
-                onEdgeClick={handleEdgeClick}
-              />
-            )}
-          </div>
-
-          {/* Draggable Vertical Splitter Handle */}
-          <VerticalSplitResizeHandle
-            splitWidth={splitWidth}
-            onSplitWidthChange={setSplitWidth}
-            position="right"
-          />
-
-          {/* Right Column: Dedicated Playback Controls & Individual Algorithm Information */}
-          <div
-            className="studio-split-panel"
-            style={{ width: `${splitWidth}px`, flex: `0 0 ${splitWidth}px` }}
-          >
-            {/* Playback Controls Bar dedicated to the individual algorithm */}
-            <MasterToolbar
-              kruskalPlayback={kruskalPlayback}
-              primPlayback={primPlayback}
-              totalSteps={
-                viewMode === 'SINGLE_KRUSKAL'
-                  ? kruskalTrace.steps.length
-                  : primTrace.steps.length
-              }
-              currentAlgorithm={viewMode === 'SINGLE_KRUSKAL' ? 'KRUSKAL' : 'PRIM'}
-            />
-
-            {/* Individual Algorithm Inspector Panel */}
-            <div className="studio-split-dock">
-              <InspectorDock
-                graph={graph}
-                kruskalTrace={kruskalTrace}
-                primTrace={primTrace}
-                kruskalStep={kruskalStep}
-                primStep={primStep}
-                kruskalStepIndex={kruskalPlayback.currentStepIndex}
-                primStepIndex={primPlayback.currentStepIndex}
-                viewMode={viewMode}
-              />
-            </div>
-          </div>
-        </div>
+      {/* View 2: Minimalist Visualizer Studio */}
+      {currentView === 'STUDIO' && (
+        <MinimalStudio
+          graphState={graphState}
+          kruskalTrace={kruskalTrace}
+          primTrace={primTrace}
+          kruskalPlayback={kruskalPlayback}
+          primPlayback={primPlayback}
+          startVertexId={effectiveStartVertex}
+          onStartVertexChange={(vertexId) => {
+            setStartVertexId(vertexId);
+            primPlayback.reset();
+          }}
+          onEdgeClick={handleEdgeClick}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+        />
       )}
 
       {/* Modals */}
-      <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
-      <EdgeWeightModal
-        edge={editingEdge}
-        onClose={() => setEditingEdge(null)}
-        onUpdateWeight={updateEdgeWeight}
-        onDeleteEdge={deleteEdge}
+      <PresetsModal
+        isOpen={isPresetsOpen}
+        onClose={() => setIsPresetsOpen(false)}
+        onSelectPreset={(presetId) => {
+          loadPreset(presetId);
+          kruskalPlayback.reset();
+          primPlayback.reset();
+        }}
       />
+
+      <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
+
+      {editingEdge && (
+        <EdgeWeightModal
+          edge={editingEdge}
+          onClose={() => setEditingEdge(null)}
+          onUpdateWeight={(_edgeId, weight) => handleSaveEdgeWeight(weight)}
+          onDeleteEdge={handleDeleteEdge}
+        />
+      )}
     </div>
   );
 }

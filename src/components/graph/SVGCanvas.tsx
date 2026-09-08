@@ -14,6 +14,7 @@ interface SVGCanvasProps {
   onVertexClick?: (vertexId: string, e: React.MouseEvent) => void;
   onVertexMove?: (vertexId: string, x: number, y: number) => void;
   onEdgeClick?: (edgeId: string, e: React.MouseEvent) => void;
+  onVertexDelete?: (vertexId: string) => void;
 }
 
 export const SVGCanvas: React.FC<SVGCanvasProps> = ({
@@ -28,6 +29,7 @@ export const SVGCanvas: React.FC<SVGCanvasProps> = ({
   onVertexClick,
   onVertexMove,
   onEdgeClick,
+  onVertexDelete,
 }) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [draggingVertexId, setDraggingVertexId] = useState<string | null>(null);
@@ -112,7 +114,7 @@ export const SVGCanvas: React.FC<SVGCanvasProps> = ({
   const selectedVertex = selectedVertexId ? vertexMap.get(selectedVertexId) : null;
 
   return (
-    <div className="stitch-panel" style={{ position: 'relative', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div className="mst-canvas-container" style={{ position: 'relative', overflow: 'hidden', width: '100%', height: '100%', minHeight: 0, minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column' }}>
       {/* Title & Badge */}
       {(title || badge) && (
         <div style={{
@@ -183,6 +185,59 @@ export const SVGCanvas: React.FC<SVGCanvasProps> = ({
         </div>
       )}
 
+      {/* Selected Node Action Toast Banner */}
+      {mode === 'SELECT' && selectedVertex && !readOnly && (
+        <div style={{
+          position: 'absolute',
+          bottom: '10px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 12,
+          backgroundColor: 'var(--bg-card)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-md)',
+          padding: '0.35rem 0.85rem',
+          fontSize: '0.75rem',
+          color: 'var(--text-primary)',
+          boxShadow: 'var(--shadow-card)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.6rem',
+        }}>
+          <span>Node <strong>{selectedVertex.label}</strong> selected</span>
+          <span style={{ color: 'var(--text-muted)' }}>&bull;</span>
+          <span style={{ color: 'var(--text-secondary)' }}>Drag to move</span>
+          {onVertexDelete && (
+            <>
+              <span style={{ color: 'var(--text-muted)' }}>&bull;</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onVertexDelete(selectedVertex.id);
+                }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '2px 8px',
+                  fontSize: '0.72rem',
+                  fontWeight: 600,
+                  borderRadius: '4px',
+                  backgroundColor: 'rgba(239, 68, 68, 0.12)',
+                  color: '#ef4444',
+                  border: '1px solid rgba(239, 68, 68, 0.25)',
+                  cursor: 'pointer',
+                }}
+                title="Remove vertex from canvas (Backspace)"
+              >
+                <span>Delete</span>
+                <kbd style={{ fontSize: '0.65rem', padding: '1px 4px', background: 'rgba(239,68,68,0.2)', borderRadius: '3px' }}>⌫ Backspace</kbd>
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
       <svg
         ref={svgRef}
         viewBox="0 0 700 450"
@@ -191,7 +246,9 @@ export const SVGCanvas: React.FC<SVGCanvasProps> = ({
           width: '100%',
           height: '100%',
           flex: 1,
-          backgroundColor: 'var(--bg-primary)',
+          minHeight: 0,
+          minWidth: 0,
+          backgroundColor: 'var(--canvas-bg)',
           cursor: mode === 'ADD_VERTEX' && !readOnly ? 'crosshair' : mode === 'ADD_EDGE' ? 'pointer' : 'default',
           userSelect: 'none',
           display: 'block',
@@ -201,12 +258,18 @@ export const SVGCanvas: React.FC<SVGCanvasProps> = ({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
-        {/* Crisp Stitch Grid Pattern */}
+        {/* Previous Clean Vector Grid Pattern (Dynamic stroke visible in both Light & Dark modes) */}
         <defs>
           <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
-            <path d="M 24 0 L 0 0 0 24" fill="none" stroke="rgba(255, 255, 255, 0.04)" strokeWidth="1" />
+            <path
+              d="M 24 0 L 0 0 0 24"
+              fill="none"
+              stroke="var(--canvas-grid-stroke)"
+              strokeWidth="1"
+            />
           </pattern>
         </defs>
+        <rect width="100%" height="100%" fill="var(--canvas-bg)" />
         <rect width="100%" height="100%" fill="url(#grid)" />
 
         {/* Render Graph Edges */}
@@ -310,13 +373,15 @@ export const SVGCanvas: React.FC<SVGCanvasProps> = ({
 
           let fillColor = 'var(--node-bg-default)';
           let strokeColor = groupColor || 'var(--node-border-default)';
-          let strokeWidth = 2;
+          let strokeWidth = 2.5;
           let radius = 18;
+          let textColor = 'var(--node-text)';
 
           if (vertexState === 'VISITED') {
             fillColor = 'var(--node-bg-visited)';
             strokeColor = groupColor || 'var(--node-border-visited)';
             strokeWidth = 3;
+            textColor = 'var(--node-visited-text)';
           }
 
           if (isSelected) {
@@ -357,22 +422,51 @@ export const SVGCanvas: React.FC<SVGCanvasProps> = ({
                 fill={fillColor}
                 stroke={strokeColor}
                 strokeWidth={strokeWidth}
-                style={{ transition: 'all 100ms ease' }}
+                style={{
+                  transition: 'all 120ms ease',
+                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.08))',
+                }}
               />
 
               {/* Node Label Text */}
               <text
                 x="0"
-                y="4"
+                y="4.5"
                 textAnchor="middle"
-                fill="#ffffff"
+                fill={textColor}
                 fontSize="12"
-                fontWeight="600"
-                fontFamily="var(--font-mono)"
+                fontWeight="700"
+                fontFamily="var(--font-sans)"
                 pointerEvents="none"
               >
                 {vertex.label}
               </text>
+
+              {/* Minimal Quick Delete Button on Selected Node */}
+              {isSelected && !readOnly && onVertexDelete && (
+                <g
+                  transform={`translate(${radius - 3}, ${-radius + 3})`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onVertexDelete(vertex.id);
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <title>Delete vertex {vertex.label} (Backspace)</title>
+                  <circle
+                    r={8}
+                    fill="#ef4444"
+                    stroke="var(--bg-card)"
+                    strokeWidth={1.5}
+                  />
+                  <path
+                    d="M -2.5 -2.5 L 2.5 2.5 M 2.5 -2.5 L -2.5 2.5"
+                    stroke="#ffffff"
+                    strokeWidth={1.5}
+                    strokeLinecap="round"
+                  />
+                </g>
+              )}
             </g>
           );
         })}
