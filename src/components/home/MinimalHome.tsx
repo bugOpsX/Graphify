@@ -653,18 +653,34 @@ export const MinimalHome: React.FC<MinimalHomeProps> = ({
         </div>
 
         <div className="mst-footer-links">
-          <button className="mst-footer-link" onClick={() => onScrollToSection('hero')}>
+          <button
+            className="mst-footer-link"
+            onClick={() => onScrollToSection('hero')}
+          >
             Home
           </button>
-          <button className="mst-footer-link" onClick={onOpenVisualizer}>
+
+          <button
+            className="mst-footer-link"
+            onClick={onOpenVisualizer}
+          >
             Visualizer
           </button>
-          <button className="mst-footer-link" onClick={() => onScrollToSection('about')}>
+
+          <button
+            className="mst-footer-link"
+            onClick={() => onScrollToSection('about')}
+          >
             About
           </button>
-          <button className="mst-footer-link" onClick={() => onScrollToSection('faqs')}>
+
+          <button
+            className="mst-footer-link"
+            onClick={() => onScrollToSection('faqs')}
+          >
             FAQs
           </button>
+
           <a
             href="https://github.com/bugOpsX/Graphify"
             target="_blank"
@@ -674,16 +690,26 @@ export const MinimalHome: React.FC<MinimalHomeProps> = ({
           >
             GitHub <ExternalLink size={12} />
           </a>
+
+          <span className="mst-footer-text">MIT License</span>
+        </div>
+        <div className="home-footer-credit">
+          Built by{' '}
+          <a
+            href="https://github.com/bugOpsX"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            bugOpsX
+          </a>
+          {' & '}
           <a
             href="https://github.com/KTanzeelaMohammadi"
             target="_blank"
             rel="noopener noreferrer"
-            className="mst-footer-link"
-            style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
           >
-            KTanzeelaMohammadi <ExternalLink size={12} />
+            KTanzeela
           </a>
-          <span className="mst-footer-text">MIT License</span>
         </div>
       </footer>
     </main>
