@@ -12,12 +12,14 @@ import {
   SkipBack,
   SkipForward,
   RotateCw,
+  TrendingUp,
 } from 'lucide-react';
 import { SVGCanvas } from '../graph/SVGCanvas';
 import { PRESET_GRAPHS } from '../../core/presets';
 import { StepExplanationView } from '../education/StepExplanationView';
 import { DataStructuresView } from '../education/DataStructuresView';
 import { MetricComparisonTable } from '../comparison/MetricComparisonTable';
+import { ComplexityCardTab } from '../comparison/ComplexityCardTab';
 import { VerticalSplitResizeHandle } from '../layout/VerticalSplitResizeHandle';
 import { HorizontalSplitResizeHandle } from '../layout/HorizontalSplitResizeHandle';
 import { MasterToolbar } from '../controls/MasterToolbar';
@@ -74,8 +76,8 @@ export const MinimalStudio: React.FC<MinimalStudioProps> = ({
   const [inspectorHeight, setInspectorHeight] = useState<number>(250);
 
   // Tab selections in side-by-side mode cards
-  const [kruskalTab, setKruskalTab] = useState<'EXPLANATION' | 'DSU' | 'METRICS'>('EXPLANATION');
-  const [primTab, setPrimTab] = useState<'EXPLANATION' | 'QUEUE' | 'METRICS'>('EXPLANATION');
+  const [kruskalTab, setKruskalTab] = useState<'EXPLANATION' | 'DSU' | 'METRICS' | 'GRAPH'>('EXPLANATION');
+  const [primTab, setPrimTab] = useState<'EXPLANATION' | 'QUEUE' | 'METRICS' | 'GRAPH'>('EXPLANATION');
 
   const speeds = [0.5, 1, 2, 4];
 
@@ -451,6 +453,13 @@ export const MinimalStudio: React.FC<MinimalStudioProps> = ({
               >
                 Metrics
               </button>
+              <button
+                className={`mst-card-tab ${kruskalTab === 'GRAPH' ? 'active' : ''}`}
+                onClick={() => setKruskalTab('GRAPH')}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+              >
+                <TrendingUp size={11} /> Complexity Graph
+              </button>
 
               {/* Right: Height Slide Presets */}
               <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -506,6 +515,14 @@ export const MinimalStudio: React.FC<MinimalStudioProps> = ({
                   kruskalTrace={kruskalTrace}
                   primTrace={primTrace}
                   algorithm="KRUSKAL"
+                />
+              )}
+              {kruskalTab === 'GRAPH' && (
+                <ComplexityCardTab
+                  graph={graph}
+                  algorithm="KRUSKAL"
+                  kruskalTrace={kruskalTrace}
+                  primTrace={primTrace}
                 />
               )}
             </div>
@@ -634,6 +651,13 @@ export const MinimalStudio: React.FC<MinimalStudioProps> = ({
               >
                 Metrics
               </button>
+              <button
+                className={`mst-card-tab ${primTab === 'GRAPH' ? 'active' : ''}`}
+                onClick={() => setPrimTab('GRAPH')}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+              >
+                <TrendingUp size={11} /> Complexity Graph
+              </button>
 
               {/* Right: Height Slide Presets */}
               <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -689,6 +713,14 @@ export const MinimalStudio: React.FC<MinimalStudioProps> = ({
                   kruskalTrace={kruskalTrace}
                   primTrace={primTrace}
                   algorithm="PRIM"
+                />
+              )}
+              {primTab === 'GRAPH' && (
+                <ComplexityCardTab
+                  graph={graph}
+                  algorithm="PRIM"
+                  kruskalTrace={kruskalTrace}
+                  primTrace={primTrace}
                 />
               )}
             </div>

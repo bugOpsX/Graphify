@@ -3,7 +3,8 @@ import type { Graph, ExecutionTrace, AlgorithmStep } from '../../core/types';
 import { StepExplanationView } from './StepExplanationView';
 import { DataStructuresView } from './DataStructuresView';
 import { MetricComparisonTable } from '../comparison/MetricComparisonTable';
-import { BookOpen, Cpu, BarChart2 } from 'lucide-react';
+import { TimeComplexityGraph } from '../comparison/TimeComplexityGraph';
+import { BookOpen, Cpu, BarChart2, TrendingUp } from 'lucide-react';
 
 interface InspectorDockProps {
   graph: Graph;
@@ -26,7 +27,7 @@ export const InspectorDock: React.FC<InspectorDockProps> = ({
   primStepIndex,
   viewMode = 'SIDE_BY_SIDE',
 }) => {
-  const [activeTab, setActiveTab] = useState<'EXPLANATION' | 'DATA_STRUCTURES' | 'METRICS'>('EXPLANATION');
+  const [activeTab, setActiveTab] = useState<'EXPLANATION' | 'DATA_STRUCTURES' | 'METRICS' | 'GRAPH'>('EXPLANATION');
 
   const algorithm =
     viewMode === 'SINGLE_KRUSKAL'
@@ -82,6 +83,14 @@ export const InspectorDock: React.FC<InspectorDockProps> = ({
             <BarChart2 size={13} />{' '}
             {viewMode === 'SIDE_BY_SIDE' ? 'Metrics & Comparison' : 'Metrics'}
           </button>
+
+          <button
+            className={`btn ${activeTab === 'GRAPH' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setActiveTab('GRAPH')}
+            style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}
+          >
+            <TrendingUp size={13} /> Complexity Graph
+          </button>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -124,6 +133,15 @@ export const InspectorDock: React.FC<InspectorDockProps> = ({
             kruskalTrace={kruskalTrace}
             primTrace={primTrace}
             algorithm={algorithm}
+          />
+        )}
+
+        {activeTab === 'GRAPH' && (
+          <TimeComplexityGraph
+            vertexCount={graph.vertices.length}
+            edgeCount={graph.edges.length}
+            algorithm={algorithm}
+            height={260}
           />
         )}
       </div>

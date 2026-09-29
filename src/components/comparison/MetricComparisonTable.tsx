@@ -1,6 +1,6 @@
 import React from 'react';
 import type { ExecutionTrace } from '../../core/types';
-import { Award, CheckCircle, ShieldCheck } from 'lucide-react';
+import { Award, CheckCircle } from 'lucide-react';
 
 interface MetricComparisonTableProps {
   kruskalTrace: ExecutionTrace | null;
@@ -61,27 +61,6 @@ export const MetricComparisonTable: React.FC<MetricComparisonTableProps> = ({
         ) : (
           <span style={{ fontSize: '0.71875rem', color: 'var(--text-muted)' }}>Calculating execution traces...</span>
         )}
-      </div>
-
-      {/* MST Validation Checklist */}
-      <div className="stitch-panel" style={{ padding: '0.6rem 0.8rem', backgroundColor: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
-        <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: 'var(--color-success)', textTransform: 'uppercase', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <ShieldCheck size={14} /> MST Validation & Optimality Guarantees
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.4rem', fontSize: '0.71875rem', color: 'var(--text-primary)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ color: 'var(--color-success)' }}>✓</span> All reachable vertices connected
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ color: 'var(--color-success)' }}>✓</span> Contains exactly |V| − 1 edges
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ color: 'var(--color-success)' }}>✓</span> Acyclic (Zero simple cycles)
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ color: 'var(--color-success)' }}>✓</span> Achieves minimum total weight
-          </div>
-        </div>
       </div>
 
       {/* Metrics Table */}
