@@ -195,8 +195,8 @@ export const TimeComplexityGraph: React.FC<TimeComplexityGraphProps> = ({
   return (
     <div
       style={{
-        backgroundColor: 'var(--bg-primary, #090d16)',
-        border: '1px solid var(--border-subtle, #1e293b)',
+        backgroundColor: 'var(--bg-primary, #111317)',
+        border: '1px solid var(--border-subtle, #2c2f3c)',
         borderRadius: 'var(--radius-lg, 10px)',
         padding: '0.65rem 0.85rem',
         display: 'flex',
@@ -213,7 +213,7 @@ export const TimeComplexityGraph: React.FC<TimeComplexityGraphProps> = ({
           justifyContent: 'space-between',
           flexWrap: 'wrap',
           gap: '0.45rem',
-          borderBottom: '1px solid var(--border-subtle, #1e293b)',
+          borderBottom: '1px solid var(--border-subtle, #2c2f3c)',
           paddingBottom: '0.5rem',
         }}
       >
@@ -318,9 +318,9 @@ export const TimeComplexityGraph: React.FC<TimeComplexityGraphProps> = ({
               display: 'inline-flex',
               alignItems: 'center',
               gap: '4px',
-              background: 'var(--bg-card-subtle, #162032)',
-              border: '1px solid var(--border-subtle, #1e293b)',
-              color: 'var(--text-secondary, #94a3b8)',
+              background: 'var(--bg-card-subtle, #1b1d25)',
+              border: '1px solid var(--border-subtle, #2c2f3c)',
+              color: 'var(--text-secondary, #a0a4b0)',
               padding: '2px 7px',
               borderRadius: '4px',
               cursor: 'pointer',
@@ -341,9 +341,9 @@ export const TimeComplexityGraph: React.FC<TimeComplexityGraphProps> = ({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '4px',
-                background: 'rgba(59, 130, 246, 0.15)',
+                background: 'var(--color-primary-subtle, rgba(59, 130, 246, 0.15))',
                 border: '1px solid rgba(59, 130, 246, 0.35)',
-                color: '#60a5fa',
+                color: 'var(--color-primary, #3b82f6)',
                 padding: '2px 7px',
                 borderRadius: '4px',
                 cursor: 'pointer',
@@ -363,10 +363,10 @@ export const TimeComplexityGraph: React.FC<TimeComplexityGraphProps> = ({
         style={{
           position: 'relative',
           width: '100%',
-          backgroundColor: 'var(--canvas-bg, #090d16)',
+          backgroundColor: 'var(--canvas-bg, #111317)',
           borderRadius: '6px',
           overflow: 'hidden',
-          border: '1px solid var(--border-subtle, #1e293b)',
+          border: '1px solid var(--border-subtle, #2c2f3c)',
         }}
       >
         <svg
@@ -418,7 +418,7 @@ export const TimeComplexityGraph: React.FC<TimeComplexityGraphProps> = ({
                   y1={yPos}
                   x2={padLeft + plotW}
                   y2={yPos}
-                  stroke="var(--border-subtle, #1e293b)"
+                  stroke="var(--border-subtle, #2c2f3c)"
                   strokeWidth="1"
                   strokeDasharray="3 3"
                   strokeOpacity="0.7"
@@ -447,7 +447,7 @@ export const TimeComplexityGraph: React.FC<TimeComplexityGraphProps> = ({
                   y1={padTop}
                   x2={xPos}
                   y2={padTop + plotH}
-                  stroke="var(--border-subtle, #1e293b)"
+                  stroke="var(--border-subtle, #2c2f3c)"
                   strokeWidth="1"
                   strokeDasharray="3 3"
                   strokeOpacity="0.7"
@@ -681,7 +681,7 @@ export const TimeComplexityGraph: React.FC<TimeComplexityGraphProps> = ({
                     width="122"
                     height="18"
                     rx="4"
-                    fill="var(--bg-secondary, #0f172a)"
+                    fill="var(--bg-secondary, #16181f)"
                     stroke="var(--color-primary, #3b82f6)"
                     strokeWidth="1"
                     filter="drop-shadow(0 2px 5px rgba(0,0,0,0.3))"
@@ -690,7 +690,7 @@ export const TimeComplexityGraph: React.FC<TimeComplexityGraphProps> = ({
                     x="61"
                     y="12.5"
                     textAnchor="middle"
-                    fill="var(--text-primary, #f8fafc)"
+                    fill="var(--text-primary, #f5f5f7)"
                     fontSize="8.5"
                     fontWeight="700"
                     fontFamily="var(--font-mono)"
@@ -744,9 +744,9 @@ export const TimeComplexityGraph: React.FC<TimeComplexityGraphProps> = ({
             position: 'absolute',
             top: '6px',
             right: '8px',
-            backgroundColor: 'rgba(15, 23, 42, 0.92)',
+            backgroundColor: 'var(--bg-card, rgba(22, 24, 31, 0.95))',
             backdropFilter: 'blur(6px)',
-            border: '1px solid var(--border-subtle, #1e293b)',
+            border: '1px solid var(--border-subtle, #2c2f3c)',
             borderRadius: '5px',
             padding: '3px 8px',
             display: 'flex',

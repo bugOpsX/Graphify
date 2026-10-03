@@ -1,20 +1,21 @@
 import React, { useState } from 'react';
 import {
   ArrowRight,
-  Edit3,
-  PlayCircle,
-  BookOpen,
+  Play,
   Sliders,
   Layers,
   Cpu,
   ExternalLink,
   ChevronDown,
+  ChevronUp,
   Info,
   CheckCircle2,
+  Sparkles,
+  GitCompare,
+  Link as LinkIcon,
+  Compass,
 } from 'lucide-react';
-import { HeroGraphGraphic } from './HeroGraphGraphic';
-import graphifyLogoFull from '../../assets/graphify-logo-full.png';
-import graphifyLogoFullDark from '../../assets/graphify-logo-full-dark.png';
+import { FinanciluxHeroVisual } from './FinanciluxHeroVisual';
 
 interface MinimalHomeProps {
   onOpenVisualizer: () => void;
@@ -33,11 +34,23 @@ export const MinimalHome: React.FC<MinimalHomeProps> = ({
   onOpenPresets,
   onScrollToSection,
 }) => {
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
-  const [activeFaqFilter, setActiveFaqFilter] = useState<'ALL' | 'Basics' | 'Algorithms' | 'Theory' | 'Applications'>('ALL');
+  const [openFaqQuestion, setOpenFaqQuestion] = useState<string | null>(
+    'What is a Minimum Spanning Tree (MST)?'
+  );
+  const [activeFaqFilter, setActiveFaqFilter] = useState<
+    'ALL' | 'Basics' | 'Algorithms' | 'Theory' | 'Applications'
+  >('ALL');
+  const [showAllFaqs, setShowAllFaqs] = useState<boolean>(false);
 
-  const toggleFaq = (idx: number) => {
-    setOpenFaqIndex((prev) => (prev === idx ? null : idx));
+  const toggleFaq = (question: string) => {
+    setOpenFaqQuestion((prev) => (prev === question ? null : question));
+  };
+
+  const handleFaqFilterChange = (
+    cat: 'ALL' | 'Basics' | 'Algorithms' | 'Theory' | 'Applications'
+  ) => {
+    setActiveFaqFilter(cat);
+    setShowAllFaqs(false);
   };
 
   const faqs: FAQItem[] = [
@@ -53,8 +66,8 @@ export const MinimalHome: React.FC<MinimalHomeProps> = ({
           <p style={{ marginBottom: '0.6rem' }}>
             A <strong>Minimum Spanning Tree (MST)</strong> is the spanning tree whose total sum of edge weights is minimal:
           </p>
-          <div style={{ background: 'var(--bg-card-subtle)', padding: '8px 14px', borderRadius: '6px', fontFamily: 'var(--font-mono)', fontSize: '0.82rem', marginBottom: '0.6rem' }}>
-            weight(T) = &Sigma;<sub>(u, v) &isin; T</sub> w(u, v) &rarr; Minimum
+          <div style={{ background: 'var(--fin-card-clay)', padding: '8px 14px', borderRadius: '6px', fontFamily: 'var(--font-mono)', fontSize: '0.82rem', marginBottom: '0.6rem' }}>
+            weight(T) = Σ<sub>(u, v) ∈ T</sub> w(u, v) → Minimum
           </div>
           <p>
             If all edge weights in the graph are distinct, the graph is guaranteed to possess a <strong>unique</strong> Minimum Spanning Tree.
@@ -74,7 +87,7 @@ export const MinimalHome: React.FC<MinimalHomeProps> = ({
             <li><strong>Sort all edges</strong> in the graph in non-decreasing order of weight (<code>O(E log E)</code>).</li>
             <li><strong>Initialize Disjoint Set Union (DSU)</strong>: place each vertex into its own independent set.</li>
             <li><strong>Iterate through sorted edges</strong>: For each edge <code>(u, v)</code>, check whether <code>find(u) == find(v)</code>.</li>
-            <li><strong>Accept or Reject</strong>: If <code>find(u) &ne; find(v)</code>, accept the edge and call <code>union(u, v)</code>. If they belong to the same component, reject the edge to prevent a cycle.</li>
+            <li><strong>Accept or Reject</strong>: If <code>find(u) ≠ find(v)</code>, accept the edge and call <code>union(u, v)</code>. If they belong to the same component, reject the edge to prevent a cycle.</li>
             <li><strong>Termination</strong>: Stop when exactly <code>|V| - 1</code> edges have been accepted.</li>
           </ol>
           <p>
@@ -89,12 +102,12 @@ export const MinimalHome: React.FC<MinimalHomeProps> = ({
       answer: (
         <div>
           <p style={{ marginBottom: '0.6rem' }}>
-            <strong>Prim's algorithm</strong> is a local, vertex-centric cut-growing algorithm designed by Vojt&#283;ch Jarn&iacute;k (1930) and rediscovered by Robert Prim (1957).
+            <strong>Prim's algorithm</strong> is a local, vertex-centric cut-growing algorithm designed by Vojtěch Jarník (1930) and rediscovered by Robert Prim (1957).
           </p>
           <ol style={{ paddingLeft: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '0.6rem' }}>
             <li><strong>Pick an arbitrary root vertex <code>s</code></strong> and mark it as visited (placed in cut <code>S</code>).</li>
             <li><strong>Initialize a Binary Min-Heap (Priority Queue)</strong> with all incident edges of <code>s</code>.</li>
-            <li><strong>Extract Min Edge</strong>: Pop the lowest-weight edge <code>(u, v)</code> from the queue where <code>u &isin; S</code> and <code>v &notin; S</code>.</li>
+            <li><strong>Extract Min Edge</strong>: Pop the lowest-weight edge <code>(u, v)</code> from the queue where <code>u ∈ S</code> and <code>v ∉ S</code>.</li>
             <li><strong>Grow Tree</strong>: Add <code>(u, v)</code> to the MST, mark <code>v</code> as visited (move to <code>S</code>), and insert all edges from <code>v</code> into unvisited neighbors into the priority queue.</li>
             <li><strong>Repeat</strong> until all <code>|V|</code> vertices are visited.</li>
           </ol>
@@ -115,32 +128,32 @@ export const MinimalHome: React.FC<MinimalHomeProps> = ({
           <div style={{ overflowX: 'auto', marginBottom: '0.8rem' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-card-subtle)' }}>
+                <tr style={{ borderBottom: '1px solid var(--fin-border)', background: 'var(--fin-card-clay)' }}>
                   <th style={{ padding: '8px 12px' }}>Feature</th>
                   <th style={{ padding: '8px 12px' }}>Kruskal's Algorithm</th>
                   <th style={{ padding: '8px 12px' }}>Prim's Algorithm</th>
                 </tr>
               </thead>
               <tbody>
-                <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                <tr style={{ borderBottom: '1px solid var(--fin-border)' }}>
                   <td style={{ padding: '8px 12px', fontWeight: 600 }}>Design Paradigm</td>
                   <td style={{ padding: '8px 12px' }}>Global Edge-Centric Greedy</td>
                   <td style={{ padding: '8px 12px' }}>Local Vertex-Centric Cut Growing</td>
                 </tr>
-                <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                <tr style={{ borderBottom: '1px solid var(--fin-border)' }}>
                   <td style={{ padding: '8px 12px', fontWeight: 600 }}>Primary Data Structure</td>
                   <td style={{ padding: '8px 12px' }}>Disjoint Set Union (DSU / Union-Find)</td>
                   <td style={{ padding: '8px 12px' }}>Binary Min-Heap / Priority Queue</td>
                 </tr>
-                <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                <tr style={{ borderBottom: '1px solid var(--fin-border)' }}>
                   <td style={{ padding: '8px 12px', fontWeight: 600 }}>Time Complexity</td>
                   <td style={{ padding: '8px 12px' }}><code>O(E log E)</code></td>
                   <td style={{ padding: '8px 12px' }}><code>O(E log V)</code></td>
                 </tr>
-                <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                <tr style={{ borderBottom: '1px solid var(--fin-border)' }}>
                   <td style={{ padding: '8px 12px', fontWeight: 600 }}>Optimal Graph Topology</td>
-                  <td style={{ padding: '8px 12px' }}><strong>Sparse Graphs</strong> (<code>E &ll; V<sup>2</sup></code>)</td>
-                  <td style={{ padding: '8px 12px' }}><strong>Dense Graphs</strong> (<code>E &approx; V<sup>2</sup></code>)</td>
+                  <td style={{ padding: '8px 12px' }}><strong>Sparse Graphs</strong> (<code>E ≪ V<sup>2</sup></code>)</td>
+                  <td style={{ padding: '8px 12px' }}><strong>Dense Graphs</strong> (<code>E ≈ V<sup>2</sup></code>)</td>
                 </tr>
                 <tr>
                   <td style={{ padding: '8px 12px', fontWeight: 600 }}>Intermediate State</td>
@@ -151,7 +164,7 @@ export const MinimalHome: React.FC<MinimalHomeProps> = ({
             </table>
           </div>
           <p>
-            <strong>Rule of Thumb:</strong> Choose Kruskal for sparse networks (e.g., roads, pipelines) because sorting few edges is very fast. Choose Prim for dense or complete networks (e.g., all-to-all communication meshes).
+            <strong>Rule of Thumb:</strong> Choose Kruskal for sparse networks (e.g., roads, pipelines) because sorting few edges is fast and DSU operations run in near-constant time. Choose Prim for dense communication matrices where priority queue cut exploration avoids sorting excessive non-MST edges.
           </p>
         </div>
       ),
@@ -199,7 +212,7 @@ export const MinimalHome: React.FC<MinimalHomeProps> = ({
       answer: (
         <div>
           <p style={{ marginBottom: '0.6rem' }}>
-            <strong>Yes!</strong> Unlike shortest path algorithms such as Dijkstra's algorithm (which fails with negative edges), both Kruskal's and Prim's algorithms work <strong>correctly with negative edge weights</strong> and zero weights.
+            <strong>Yes!</strong> Unlike shortest path algorithms such as Dijkstra's algorithm (which fails with negative cycles or negative edges without special handling), both Kruskal's and Prim's algorithms work <strong>correctly with negative edge weights</strong> and zero weights.
           </p>
           <p>
             This is because MST algorithms only rely on the <em>relative ordering</em> of edge weights (via the Cut and Cycle properties) and spanning connectivity, rather than path accumulation.
@@ -234,7 +247,7 @@ export const MinimalHome: React.FC<MinimalHomeProps> = ({
             <li><code>union(u, v)</code>: Merges the sets containing <code>u</code> and <code>v</code> by attaching the shallower tree under the deeper tree (<strong>Union by Rank</strong>).</li>
           </ul>
           <p>
-            With both optimizations, operations execute in <code>O(&alpha;(V))</code> time, where <code>&alpha;</code> is the inverse Ackermann function (effectively &le; 4 for all practical inputs).
+            With both optimizations, operations execute in <code>O(α(V))</code> time, where <code>α</code> is the inverse Ackermann function (effectively ≤ 4 for all practical inputs).
           </p>
         </div>
       ),
@@ -248,46 +261,27 @@ export const MinimalHome: React.FC<MinimalHomeProps> = ({
             MST algorithms are applied extensively across technology, engineering, and data science:
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.6rem' }}>
-            <div style={{ background: 'var(--bg-card-subtle)', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ background: 'var(--fin-card-clay)', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--fin-border)' }}>
               <strong>🌐 Fiber & Telecom Networks</strong>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Minimizing fiber-optic trenching length to connect regional data centers.</div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--fin-text-sub)' }}>Minimizing fiber-optic trenching length to connect regional data centers.</div>
             </div>
-            <div style={{ background: 'var(--bg-card-subtle)', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ background: 'var(--fin-card-clay)', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--fin-border)' }}>
               <strong>⚡ Electrical Power Grids</strong>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Linking power generation plants and substations with minimal high-voltage wiring cost.</div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--fin-text-sub)' }}>Linking power generation plants and substations with minimal high-voltage wiring cost.</div>
             </div>
-            <div style={{ background: 'var(--bg-card-subtle)', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ background: 'var(--fin-card-clay)', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--fin-border)' }}>
               <strong>🤖 Machine Learning Clustering</strong>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Single-linkage hierarchical clustering partitions clusters by severing heavy MST edges.</div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--fin-text-sub)' }}>Single-linkage hierarchical clustering partitions clusters by severing heavy MST edges.</div>
             </div>
-            <div style={{ background: 'var(--bg-card-subtle)', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ background: 'var(--fin-card-clay)', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--fin-border)' }}>
               <strong>🔌 VLSI Microchip Routing</strong>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Interconnecting semiconductor pins on silicon chips with minimal wire length and capacitance.</div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--fin-text-sub)' }}>Interconnecting semiconductor pins on silicon chips with minimal wire length and capacitance.</div>
             </div>
-            <div style={{ background: 'var(--bg-card-subtle)', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ background: 'var(--fin-card-clay)', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--fin-border)' }}>
               <strong>📍 Metric TSP 2-Approximation</strong>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Doubling MST edges and creating an Eulerian tour yields a proven 2-approximation for the Traveling Salesperson Problem.</div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--fin-text-sub)' }}>Doubling MST edges and creating an Eulerian tour yields a proven 2-approximation for TSP.</div>
             </div>
           </div>
-        </div>
-      ),
-    },
-    {
-      category: 'Applications',
-      question: 'How do I build custom graphs and edit edge weights in MST Lab?',
-      answer: (
-        <div>
-          <p style={{ marginBottom: '0.6rem' }}>
-            MST Lab provides an interactive graph editor directly in the Visualizer Studio:
-          </p>
-          <ul style={{ paddingLeft: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-            <li><strong>Select & Move</strong>: Drag nodes to position them cleanly on the grid.</li>
-            <li><strong>Add Vertex</strong>: Click anywhere on the canvas to place a new vertex.</li>
-            <li><strong>Add Edge</strong>: Click the first node, then click the second node to create a weighted connection.</li>
-            <li><strong>Edit Weight</strong>: Click any edge or its weight label to open the weight editor modal.</li>
-            <li><strong>Set Start Node</strong>: In Prim mode, choose any vertex to observe how the cut frontier expands from that root.</li>
-            <li><strong>Preset Graphs</strong>: Load textbook topologies like Complete K5, Ring Cycles, or Disconnected Forests.</li>
-          </ul>
         </div>
       ),
     },
@@ -298,420 +292,443 @@ export const MinimalHome: React.FC<MinimalHomeProps> = ({
       ? faqs
       : faqs.filter((f) => f.category === activeFaqFilter);
 
+  const INITIAL_FAQ_COUNT = 4;
+  const visibleFaqs = showAllFaqs ? filteredFaqs : filteredFaqs.slice(0, INITIAL_FAQ_COUNT);
+
   return (
-    <main className="mst-home-page">
-      {/* 2-Column Hero Section matching mockup top */}
-      <section className="mst-hero-section" id="hero">
-        {/* Left Hero Content */}
-        <div className="mst-hero-left">
-          <div className="mst-hero-brand-wrap">
-            <img
-              src={graphifyLogoFullDark}
-              alt="Graphify"
-              className="mst-hero-full-logo dark-only"
-            />
-            <img
-              src={graphifyLogoFull}
-              alt="Graphify"
-              className="mst-hero-full-logo light-only"
-            />
-          </div>
-
-          <div className="mst-hero-tag">VISUALIZE • EXPLORE • UNDERSTAND</div>
-
-          <h1 className="mst-hero-title">
-            Minimum Spanning Trees,<br />
-            <span className="mst-hero-title-accent">Made Visual</span>
-          </h1>
-
-          <p className="mst-hero-subtitle">
-            An interactive platform to visualize and compare Kruskal's and Prim's algorithms
-            step by step. Build your own graphs, explore algorithm decisions, and strengthen
-            your understanding of MSTs.
-          </p>
-
-          <div className="mst-hero-cta-group">
-            <button className="mst-btn-primary" onClick={onOpenVisualizer}>
-              <span>Open Visualizer</span>
-              <ArrowRight size={15} />
-            </button>
-
-            <button className="mst-btn-secondary" onClick={() => onScrollToSection('workflow')}>
-              <span>Learn MST Theory</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Right Hero Graphic */}
-        <div className="mst-hero-right">
-          <HeroGraphGraphic />
-        </div>
-      </section>
-
-      {/* 3 Highlight Feature Cards matching mockup top */}
-      <section className="mst-features-section" id="features">
-        <div
-          className="mst-feature-card"
-          onClick={onOpenPresets}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === 'Enter' && onOpenPresets()}
-        >
-          <div className="mst-feature-icon-box">
-            <Edit3 size={18} />
-          </div>
-          <h3 className="mst-feature-title">Build or Generate Graphs</h3>
-          <p className="mst-feature-desc">
-            Create custom graphs, use presets, or generate random graphs.
-          </p>
-        </div>
-
-        <div
-          className="mst-feature-card"
-          onClick={onOpenVisualizer}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === 'Enter' && onOpenVisualizer()}
-        >
-          <div className="mst-feature-icon-box">
-            <PlayCircle size={18} />
-          </div>
-          <h3 className="mst-feature-title">Step Through Algorithms</h3>
-          <p className="mst-feature-desc">
-            Watch algorithm decisions with clear explanations.
-          </p>
-        </div>
-
-        <div
-          className="mst-feature-card"
-          onClick={() => onScrollToSection('about')}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === 'Enter' && onScrollToSection('about')}
-        >
-          <div className="mst-feature-icon-box">
-            <BookOpen size={18} />
-          </div>
-          <h3 className="mst-feature-title">Compare and Learn</h3>
-          <p className="mst-feature-desc">
-            See Kruskal's and Prim's algorithms side by side.
-          </p>
-        </div>
-      </section>
-
-      {/* Minimal Step-Wise Working of the Platform */}
-      <section className="mst-content-section" id="workflow">
-        <div className="mst-section-header">
-          <span className="mst-section-tag">Platform Workflow</span>
-          <h2 className="mst-section-title">Minimal Step-Wise Working of the Platform</h2>
-          <p className="mst-section-desc">
-            Follow this streamlined 3-stage interactive pipeline to construct, step through, and analyze graph algorithms.
-          </p>
-        </div>
-
-        <div className="mst-workflow-grid">
-          {/* Step 1 */}
-          <div className="mst-workflow-card">
-            <div className="mst-workflow-header-row">
-              <div className="mst-feature-icon-box">
-                <Sliders size={18} />
-              </div>
-              <span className="mst-workflow-step-badge">STEP 01</span>
-            </div>
-            <h3 className="mst-workflow-title">Construct Topology</h3>
-            <p className="mst-workflow-desc">
-              Place vertices, draw weighted edges, and drag nodes into position with intuitive canvas tools. Or instantly load textbook presets like Dense K5, Ring Cycles, and Disconnected Forests.
-            </p>
-            <div className="mst-workflow-footer-chip">
-              Modes: Select & Move • Add Vertex • Add Edge • Set Start Node
-            </div>
-          </div>
-
-          {/* Step 2 */}
-          <div className="mst-workflow-card">
-            <div className="mst-workflow-header-row">
-              <div className="mst-feature-icon-box">
-                <Layers size={18} />
-              </div>
-              <span className="mst-workflow-step-badge">STEP 02</span>
-            </div>
-            <h3 className="mst-workflow-title">Step Through Algorithms</h3>
-            <p className="mst-workflow-desc">
-              Execute Kruskal and Prim with interactive playback controls. Scrub through synchronized steps, jump forward or back, and control speed multipliers (0.5x, 1x, 2x, 4x) or use keyboard shortcuts.
-            </p>
-            <div className="mst-workflow-footer-chip">
-              Synchronized Scrubber • Play / Pause • Step Hotkeys
-            </div>
-          </div>
-
-          {/* Step 3 */}
-          <div className="mst-workflow-card">
-            <div className="mst-workflow-header-row">
-              <div className="mst-feature-icon-box">
-                <Cpu size={18} />
-              </div>
-              <span className="mst-workflow-step-badge">STEP 03</span>
-            </div>
-            <h3 className="mst-workflow-title">Inspect Data Structures</h3>
-            <p className="mst-workflow-desc">
-              Examine live internal states: observe Kruskal's Disjoint Set Union (DSU) parent pointers and path compression, inspect Prim's Min-Priority Queue candidate cut edges, and track pseudocode.
-            </p>
-            <div className="mst-workflow-footer-chip">
-              DSU Sets • Binary Min-Heap • Metric Comparison Table
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* About Section */}
-      <section className="mst-content-section" id="about">
-        <div className="mst-section-header">
-          <span className="mst-section-tag">About Platform</span>
-          <h2 className="mst-section-title">About MST Lab</h2>
-          <p className="mst-section-desc">
-            An open educational initiative dedicated to demystifying greedy graph algorithms and Minimum Spanning Trees.
-          </p>
-        </div>
-
-        <div
-          style={{
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '2rem',
-            boxShadow: 'var(--shadow-card)',
-          }}
-        >
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.5rem' }}>
-                <Info size={18} color="var(--color-primary)" />
-                <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  Interactive Pedagogy
-                </h4>
-              </div>
-              <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
-                Traditional textbooks teach MST algorithms through static formulas and tables. MST Lab brings algorithms to life by rendering exact mathematical states, cycle rejections, and priority queue evaluations in real time.
-              </p>
+    <main className="mst-home-page fin-theme-root">
+      {/* Outer framing container replicating the editorial warm stone aesthetic */}
+      <div className="fin-canvas-frame">
+        {/* =========================================================================
+            1. HERO SECTION: Direct Translation of Reference Image
+            ========================================================================= */}
+        <section className="fin-hero-section" id="hero">
+          {/* Left Column: Eyebrow + 3-line Headline + Buttons */}
+          <div className="fin-hero-left">
+            {/* Technical Hairline Eyebrow Badge */}
+            <div className="fin-hero-eyebrow">
+              <span className="fin-axis-crosshair" aria-hidden="true">
+                <span className="fin-axis-line" />
+                <span className="fin-axis-target" />
+              </span>
+              <span>
+                Explore interactive <strong>MST algorithms</strong>
+              </span>
             </div>
 
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.5rem' }}>
-                <CheckCircle2 size={18} color="var(--color-success)" />
-                <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  Comparative Dual Traces
-                </h4>
-              </div>
-              <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
-                Compare Kruskal's global edge sorting strategy side by side with Prim's expanding vertex cut. See firsthand why sparse graphs benefit Kruskal and dense graphs favor Prim.
-              </p>
-            </div>
-          </div>
+            {/* Massive 3-Line Display Headline */}
+            <h1 className="fin-hero-title">
+              <span>Minimum</span>
+              <span>Spanning</span>
+              <span>Platform</span>
+            </h1>
 
-          <div
-            style={{
-              paddingTop: '1.25rem',
-              borderTop: '1px solid var(--border-subtle)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: '1rem',
-            }}
-          >
-            <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-              Built with TypeScript, React, and SVG Canvas engine. Zero heavy graph dependencies.
-            </div>
-            <button className="mst-btn-primary" onClick={onOpenVisualizer} style={{ padding: '0.5rem 1rem', fontSize: '0.8125rem' }}>
-              <span>Launch Studio</span>
-              <ArrowRight size={14} />
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQs Section */}
-      <section className="mst-content-section" id="faqs">
-        <div className="mst-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <span className="mst-section-tag">Knowledge Base</span>
-            <h2 className="mst-section-title">Frequently Asked Questions</h2>
-            <p className="mst-section-desc">
-              Comprehensive answers covering Minimum Spanning Trees, Kruskal vs. Prim differences, complexity proofs, and edge cases.
-            </p>
-          </div>
-
-          {/* Filter Pills */}
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-            {(['ALL', 'Basics', 'Algorithms', 'Theory', 'Applications'] as const).map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveFaqFilter(cat)}
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: 'var(--radius-full)',
-                  fontSize: '0.75rem',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  border: '1px solid',
-                  borderColor: activeFaqFilter === cat ? 'var(--color-primary)' : 'var(--border-subtle)',
-                  background: activeFaqFilter === cat ? 'var(--color-primary-subtle)' : 'transparent',
-                  color: activeFaqFilter === cat ? 'var(--color-primary)' : 'var(--text-secondary)',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                {cat}
+            {/* Action Buttons: Dark Pill + Outline Circle Play */}
+            <div className="fin-hero-actions">
+              <button className="fin-btn-dark-pill" onClick={onOpenVisualizer}>
+                <span>Try for free</span>
               </button>
-            ))}
+
+              <button
+                className="fin-btn-outline-play"
+                onClick={() => onScrollToSection('arena')}
+              >
+                <span className="fin-play-icon-circle">
+                  <Play size={11} fill="currentColor" />
+                </span>
+                <span>See demo</span>
+              </button>
+            </div>
           </div>
-        </div>
 
-        <div className="mst-faq-list">
-          {filteredFaqs.map((faq, idx) => {
-            const isOpen = openFaqIndex === idx;
-            return (
-              <div key={idx} className={`mst-faq-item ${isOpen ? 'open' : ''}`}>
-                <button
-                  className="mst-faq-question"
-                  onClick={() => toggleFaq(idx)}
-                  aria-expanded={isOpen}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span
-                      style={{
-                        fontSize: '0.65rem',
-                        textTransform: 'uppercase',
-                        fontWeight: 600,
-                        letterSpacing: '0.04em',
-                        color: 'var(--color-primary)',
-                        background: 'var(--color-primary-subtle)',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                      }}
-                    >
-                      {faq.category}
-                    </span>
-                    <span>{faq.question}</span>
+          {/* Right Column: Hero Visual Studio Card */}
+          <div className="fin-hero-right">
+            <FinanciluxHeroVisual onOpenStudio={onOpenVisualizer} />
+          </div>
+        </section>
+
+        {/* =========================================================================
+            2. BOTTOM 3-COLUMN FEATURE BAR (Directly from Reference Image)
+            ========================================================================= */}
+        <section className="fin-bottom-bar" id="bottom-bar">
+          {/* Horizontal Hairline Dividing Rule */}
+          <div className="fin-bottom-divider">
+            <div className="fin-divider-line" />
+          </div>
+
+          <div className="fin-bottom-grid">
+            {/* Column 1: The Floating Drawer Card */}
+            <div className="fin-drawer-col">
+              <div className="fin-drawer-card">
+                {/* Upper Clay Section */}
+                <div className="fin-drawer-top">
+                  <div className="fin-drawer-stat">1 million +</div>
+                  <div className="fin-drawer-desc">Real-time MST calculations executed</div>
+                </div>
+
+                {/* Lower White Drawer with Wave & Sparkle */}
+                <div className="fin-drawer-bottom">
+                  <div className="fin-drawer-icons">
+                    <span className="fin-icon-sparkle">✦</span>
+                    <span className="fin-icon-dots">••</span>
                   </div>
-                  <ChevronDown size={17} className={`mst-faq-chevron ${isOpen ? 'open' : ''}`} />
-                </button>
-
-                {isOpen && <div className="mst-faq-answer">{faq.answer}</div>}
+                  {/* Tree branching sine wave path */}
+                  <svg
+                    viewBox="0 0 120 20"
+                    width="120"
+                    height="20"
+                    className="fin-drawer-wave-svg"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M 0 10 Q 15 2 30 10 T 60 10 T 90 10 T 120 10"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
               </div>
-            );
-          })}
-        </div>
+            </div>
 
-        {/* Bottom CTA Box */}
-        <div
-          style={{
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '2rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '1rem',
-            boxShadow: 'var(--shadow-card)',
-            marginTop: '3rem',
-          }}
-        >
-          <div>
-            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
-              Ready to explore algorithms in action?
-            </h4>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
-              Open the interactive visualizer studio to drag nodes, test edge weights, and step through Kruskal and Prim.
+            {/* Column 2: Center Feature (Disjoint Set Union) */}
+            <div className="fin-feature-col">
+              <div className="fin-feature-icon-circle">
+                <LinkIcon size={16} strokeWidth={2} />
+              </div>
+              <h3 className="fin-feature-title">Disjoint Set Union</h3>
+              <p className="fin-feature-desc">
+                Make your cycle analysis instant with path compression and union-by-rank partition trees.
+              </p>
+            </div>
+
+            {/* Column 3: Right Feature (Binary Min-Heap) */}
+            <div className="fin-feature-col">
+              <div className="fin-feature-icon-circle">
+                <Layers size={16} strokeWidth={2} />
+              </div>
+              <h3 className="fin-feature-title">Binary Min-Heap</h3>
+              <p className="fin-feature-desc">
+                Greedy cut-frontier priority queue extracting minimal weight edges at each step to expand the connected tree.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* =========================================================================
+            3. HOW IT WORKS (3-Step Pipeline with Hairline Drafting Markers)
+            ========================================================================= */}
+        <section className="fin-section" id="workflow">
+          <div className="fin-section-header">
+            <div className="fin-section-eyebrow">
+              <span className="fin-axis-crosshair" aria-hidden="true">
+                <span className="fin-axis-line" />
+                <span className="fin-axis-target" />
+              </span>
+              <span>PLATFORM WORKFLOW</span>
+            </div>
+            <h2 className="fin-section-title">How It Works</h2>
+            <p className="fin-section-desc">
+              Follow this 3-stage interactive pipeline to construct, scrub through, and analyze graph algorithms.
             </p>
           </div>
 
-          <button className="mst-btn-primary" onClick={onOpenVisualizer}>
-            <span>Open Visualizer Studio</span>
-            <ArrowRight size={15} />
-          </button>
-        </div>
-      </section>
+          <div className="fin-workflow-grid">
+            <div className="fin-workflow-card">
+              <div className="fin-workflow-num">01</div>
+              <h3 className="fin-workflow-title">Construct Topology</h3>
+              <p className="fin-workflow-desc">
+                Place vertices, draw weighted edges, and drag nodes into position with intuitive canvas tools. Or instantly load textbook presets like Dense K5, Ring Cycles, and Disconnected Forests.
+              </p>
+              <div className="fin-workflow-chip">Select & Move • Add Vertex • Add Edge</div>
+            </div>
 
-      {/* Clean Minimalist Footer */}
-      <footer className="mst-home-footer">
-        <div className="mst-footer-left">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <img
-              src={graphifyLogoFullDark}
-              alt="Graphify"
-              className="mst-footer-full-logo dark-only"
-            />
-            <img
-              src={graphifyLogoFull}
-              alt="Graphify"
-              className="mst-footer-full-logo light-only"
-            />
+            <div className="fin-workflow-card">
+              <div className="fin-workflow-num">02</div>
+              <h3 className="fin-workflow-title">Step Through Algorithms</h3>
+              <p className="fin-workflow-desc">
+                Execute Kruskal and Prim with interactive playback controls. Scrub through synchronized steps, jump forward or back, and control speed multipliers (0.5x, 1x, 2x, 4x) or use keyboard shortcuts.
+              </p>
+              <div className="fin-workflow-chip">Synchronized Scrubber • Step Hotkeys</div>
+            </div>
+
+            <div className="fin-workflow-card">
+              <div className="fin-workflow-num">03</div>
+              <h3 className="fin-workflow-title">Inspect Data Structures</h3>
+              <p className="fin-workflow-desc">
+                Examine live internal states: observe Kruskal's Disjoint Set Union (DSU) parent pointers and path compression, inspect Prim's Min-Priority Queue candidate cut edges, and track pseudocode.
+              </p>
+              <div className="fin-workflow-chip">DSU Sets • Binary Min-Heap • Metric Table</div>
+            </div>
           </div>
-          <span className="mst-footer-text">• Minimum Spanning Tree Interactive Platform</span>
-        </div>
+        </section>
 
-        <div className="mst-footer-links">
-          <button
-            className="mst-footer-link"
-            onClick={() => onScrollToSection('hero')}
-          >
-            Home
-          </button>
+        {/* =========================================================================
+            6. KEY CAPABILITIES (Clean Circular Outline Icons)
+            ========================================================================= */}
+        <section className="fin-section" id="features">
+          <div className="fin-section-header">
+            <div className="fin-section-eyebrow">
+              <span className="fin-axis-crosshair" aria-hidden="true">
+                <span className="fin-axis-line" />
+                <span className="fin-axis-target" />
+              </span>
+              <span>CORE CAPABILITIES</span>
+            </div>
+            <h2 className="fin-section-title">Built for Algorithmic Mastery</h2>
+            <p className="fin-section-desc">
+              Everything you need to deeply understand minimum spanning trees, verified data structure transitions, and theoretical complexity bounds.
+            </p>
+          </div>
 
-          <button
-            className="mst-footer-link"
-            onClick={onOpenVisualizer}
-          >
-            Visualizer
-          </button>
+          <div className="fin-capabilities-grid">
+            <div className="fin-cap-card">
+              <div className="fin-cap-icon">
+                <GitCompare size={18} strokeWidth={2} />
+              </div>
+              <h4>Side-by-Side Dual Tracing</h4>
+              <p>Run Kruskal and Prim simultaneously on the exact same graph to witness how their search orders and intermediate components differ.</p>
+            </div>
 
-          <button
-            className="mst-footer-link"
-            onClick={() => onScrollToSection('about')}
-          >
-            About
-          </button>
+            <div className="fin-cap-card">
+              <div className="fin-cap-icon">
+                <Sparkles size={18} strokeWidth={2} />
+              </div>
+              <h4>Visual Cycle Detection</h4>
+              <p>Watch Kruskal evaluate edge endpoints through DSU find operations, triggering glowing red warnings whenever a cycle is prevented.</p>
+            </div>
 
-          <button
-            className="mst-footer-link"
-            onClick={() => onScrollToSection('faqs')}
-          >
-            FAQs
-          </button>
+            <div className="fin-cap-card">
+              <div className="fin-cap-icon">
+                <Layers size={18} strokeWidth={2} />
+              </div>
+              <h4>Min-Cut Frontier Expansion</h4>
+              <p>Observe Prim partition the graph into Visited (S) and Unvisited (V\S) sets, extracting the minimum crossing cut edge on every iteration.</p>
+            </div>
 
-          <a
-            href="https://github.com/bugOpsX/Graphify"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mst-footer-link"
-            style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
-          >
-            GitHub <ExternalLink size={12} />
-          </a>
+            <div className="fin-cap-card">
+              <div className="fin-cap-icon">
+                <Sliders size={18} strokeWidth={2} />
+              </div>
+              <h4>Interactive Weight Editing</h4>
+              <p>Click any edge or label on the canvas to change weights dynamically and observe instant recalculation across both algorithms.</p>
+            </div>
 
-          <span className="mst-footer-text">MIT License</span>
-        </div>
-        <div className="home-footer-credit">
-          Built by{' '}
-          <a
-            href="https://github.com/bugOpsX"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            bugOpsX
-          </a>
-          {' & '}
-          <a
-            href="https://github.com/KTanzeelaMohammadi"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            KTanzeela
-          </a>
-        </div>
-      </footer>
+            <div className="fin-cap-card">
+              <div className="fin-cap-icon">
+                <Compass size={18} strokeWidth={2} />
+              </div>
+              <h4>Arbitrary Prim Root Selection</h4>
+              <p>Select any vertex as the initial starting seed for Prim's algorithm to inspect how cut frontiers propagate from different origins.</p>
+            </div>
+
+            <div className="fin-cap-card">
+              <div className="fin-cap-icon">
+                <Cpu size={18} strokeWidth={2} />
+              </div>
+              <h4>Zero-Dependency SVG Engine</h4>
+              <p>High-performance vector rendering built in pure TypeScript and React, guaranteeing pixel-crisp zooming and ultra-responsive scrubbers.</p>
+            </div>
+          </div>
+        </section>
+
+        {/* =========================================================================
+            7. ABOUT SECTION
+            ========================================================================= */}
+        <section className="fin-section" id="about">
+          <div className="fin-section-header">
+            <div className="fin-section-eyebrow">
+              <span className="fin-axis-crosshair" aria-hidden="true">
+                <span className="fin-axis-line" />
+                <span className="fin-axis-target" />
+              </span>
+              <span>ABOUT THE PLATFORM</span>
+            </div>
+            <h2 className="fin-section-title">About Graphify</h2>
+            <p className="fin-section-desc">
+              An open educational initiative dedicated to demystifying greedy graph algorithms and Minimum Spanning Trees.
+            </p>
+          </div>
+
+          <div className="fin-about-card">
+            <div className="fin-about-grid">
+              <div>
+                <div className="fin-about-row-title">
+                  <Info size={18} />
+                  <h4>Interactive Pedagogy</h4>
+                </div>
+                <p>
+                  Traditional textbooks teach MST algorithms through static formulas and tables. Graphify brings algorithms to life by rendering exact mathematical states, cycle rejections, and priority queue evaluations in real time.
+                </p>
+              </div>
+
+              <div>
+                <div className="fin-about-row-title">
+                  <CheckCircle2 size={18} />
+                  <h4>Comparative Dual Traces</h4>
+                </div>
+                <p>
+                  Compare Kruskal's global edge sorting strategy side by side with Prim's expanding vertex cut. See firsthand why sparse graphs benefit Kruskal and dense graphs favor Prim.
+                </p>
+              </div>
+            </div>
+
+            <div className="fin-about-footer">
+              <span className="fin-tech-pill">
+                Pure TypeScript • React • Vector SVG Engine • MIT License
+              </span>
+              <button className="fin-btn-dark-pill small" onClick={onOpenVisualizer}>
+                <span>Launch Studio</span>
+                <ArrowRight size={13} />
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* =========================================================================
+            8. KNOWLEDGE BASE (FAQs)
+            ========================================================================= */}
+        <section className="fin-section" id="faqs">
+          <div className="fin-faq-header-split">
+            <div>
+              <div className="fin-section-eyebrow">
+                <span className="fin-axis-crosshair" aria-hidden="true">
+                  <span className="fin-axis-line" />
+                  <span className="fin-axis-target" />
+                </span>
+                <span>KNOWLEDGE BASE</span>
+              </div>
+              <h2 className="fin-section-title">Frequently Asked Questions</h2>
+            </div>
+
+            <div className="fin-faq-pills">
+              {(['ALL', 'Basics', 'Algorithms', 'Theory', 'Applications'] as const).map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => handleFaqFilterChange(cat)}
+                  className={`fin-faq-pill ${activeFaqFilter === cat ? 'active' : ''}`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="fin-faq-list">
+            {visibleFaqs.map((faq) => {
+              const isOpen = openFaqQuestion === faq.question;
+              return (
+                <div key={faq.question} className={`fin-faq-item ${isOpen ? 'open' : ''}`}>
+                  <button
+                    className="fin-faq-question-btn"
+                    onClick={() => toggleFaq(faq.question)}
+                    aria-expanded={isOpen}
+                  >
+                    <div className="fin-faq-q-left">
+                      <span className="fin-faq-cat-badge">{faq.category}</span>
+                      <span>{faq.question}</span>
+                    </div>
+                    <ChevronDown size={18} className={`fin-faq-chevron ${isOpen ? 'open' : ''}`} />
+                  </button>
+
+                  {isOpen && <div className="fin-faq-answer">{faq.answer}</div>}
+                </div>
+              );
+            })}
+          </div>
+
+          {filteredFaqs.length > INITIAL_FAQ_COUNT && (
+            <div className="fin-faq-more-wrap">
+              <button
+                className="fin-faq-more-btn"
+                onClick={() => setShowAllFaqs((prev) => !prev)}
+                aria-expanded={showAllFaqs}
+              >
+                <span>
+                  {showAllFaqs
+                    ? 'Show fewer questions'
+                    : `See more questions (${filteredFaqs.length - INITIAL_FAQ_COUNT} more)`}
+                </span>
+                {showAllFaqs ? (
+                  <ChevronUp size={16} className="fin-faq-more-icon" />
+                ) : (
+                  <ChevronDown size={16} className="fin-faq-more-icon" />
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* Bottom Heroic CTA Box */}
+          <div className="fin-cta-banner">
+            <div className="fin-cta-left">
+              <h4>Ready to explore algorithms in action?</h4>
+              <p>
+                Open the interactive visualizer studio to drag nodes, test edge weights, and step through Kruskal and Prim.
+              </p>
+            </div>
+
+            <div className="fin-cta-right">
+              <button className="fin-btn-dark-pill" onClick={onOpenVisualizer}>
+                <span>Open Visualizer Studio</span>
+                <ArrowRight size={14} />
+              </button>
+              <button className="fin-btn-outline" onClick={onOpenPresets}>
+                <span>Browse All Presets</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* =========================================================================
+            9. CLEAN EDITORIAL FOOTER (With Preserved bugOpsX & KTanzeela Credits)
+            ========================================================================= */}
+        <footer className="fin-home-footer">
+          <div className="fin-footer-left">
+            <span className="fin-footer-brand">Graphify</span>
+            <span className="fin-footer-tagline">• Minimum Spanning Tree Interactive Platform</span>
+          </div>
+
+          <div className="fin-footer-links">
+            <button className="fin-footer-link" onClick={() => onScrollToSection('hero')}>
+              Home
+            </button>
+            <button className="fin-footer-link" onClick={onOpenVisualizer}>
+              Visualizer
+            </button>
+            <button className="fin-footer-link" onClick={() => onScrollToSection('workflow')}>
+              How It Works
+            </button>
+            <button className="fin-footer-link" onClick={() => onScrollToSection('about')}>
+              Features
+            </button>
+            <button className="fin-footer-link" onClick={() => onScrollToSection('faqs')}>
+              FAQs
+            </button>
+            <a
+              href="https://github.com/bugOpsX/Graphify"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="fin-footer-link"
+            >
+              <span>GitHub</span>
+              <ExternalLink size={11} />
+            </a>
+          </div>
+
+          {/* Preserved user credit */}
+          <div className="home-footer-credit">
+            Built by{' '}
+            <a href="https://github.com/bugOpsX" target="_blank" rel="noopener noreferrer">
+              bugOpsX
+            </a>
+            {' & '}
+            <a href="https://github.com/KTanzeelaMohammadi" target="_blank" rel="noopener noreferrer">
+              KTanzeela
+            </a>
+          </div>
+        </footer>
+      </div>
     </main>
   );
 };

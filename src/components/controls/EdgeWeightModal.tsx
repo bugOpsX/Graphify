@@ -40,23 +40,17 @@ export const EdgeWeightModal: React.FC<EdgeWeightModalProps> = ({
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      zIndex: 100,
-      background: 'rgba(10, 13, 20, 0.75)',
-      backdropFilter: 'blur(6px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '1rem',
-    }}>
-      <div className="glass-card" style={{ width: '100%', maxWidth: '380px', padding: '1.4rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+    <div className="mst-modal-overlay" onClick={onClose}>
+      <div
+        className="mst-modal-card"
+        style={{ width: '100%', maxWidth: '380px', display: 'flex', flexDirection: 'column', gap: '1rem' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.6rem' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
             Edit Edge Weight
           </h3>
-          <button className="btn btn-secondary" onClick={onClose} style={{ padding: '0.2rem 0.5rem' }}>
+          <button className="mst-btn-icon" onClick={onClose} aria-label="Close modal">
             <X size={16} />
           </button>
         </div>
@@ -72,9 +66,9 @@ export const EdgeWeightModal: React.FC<EdgeWeightModalProps> = ({
               onChange={(e) => setWeightInput(e.target.value)}
               autoFocus
               style={{
-                background: 'rgba(18, 24, 36, 0.9)',
-                color: '#fff',
-                border: '1px solid var(--border-glass)',
+                background: 'var(--bg-card-subtle)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-subtle)',
                 borderRadius: 'var(--radius-md)',
                 padding: '0.5rem 0.8rem',
                 fontSize: '1rem',
@@ -85,15 +79,59 @@ export const EdgeWeightModal: React.FC<EdgeWeightModalProps> = ({
           </div>
 
           <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'space-between', marginTop: '0.5rem' }}>
-            <button type="button" className="btn btn-danger" onClick={handleDelete} style={{ fontSize: '0.8rem' }}>
+            <button
+              type="button"
+              onClick={handleDelete}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '6px 12px',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid rgba(239, 68, 68, 0.4)',
+                background: 'rgba(239, 68, 68, 0.12)',
+                color: '#ef4444',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
               <Trash2 size={15} /> Delete Edge
             </button>
 
             <div style={{ display: 'flex', gap: '0.4rem' }}>
-              <button type="button" className="btn btn-secondary" onClick={onClose} style={{ fontSize: '0.8rem' }}>
+              <button
+                type="button"
+                onClick={onClose}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-subtle)',
+                  background: 'var(--bg-card-subtle)',
+                  color: 'var(--text-secondary)',
+                  fontSize: '0.8rem',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                }}
+              >
                 Cancel
               </button>
-              <button type="submit" className="btn btn-primary" style={{ fontSize: '0.8rem' }}>
+              <button
+                type="submit"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '6px 14px',
+                  borderRadius: 'var(--radius-md)',
+                  border: 'none',
+                  background: 'var(--color-primary)',
+                  color: '#ffffff',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
                 <Check size={15} /> Save
               </button>
             </div>

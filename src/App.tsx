@@ -29,6 +29,9 @@ export function App() {
 
   // Theme Management (Default Dark, toggles to Light)
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paramTheme = params.get('theme');
+    if (paramTheme === 'light' || paramTheme === 'dark') return paramTheme;
     const saved = localStorage.getItem('mst-theme');
     return saved === 'light' ? 'light' : 'dark';
   });

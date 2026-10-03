@@ -39,7 +39,7 @@
   z-index: 60;
   display: flex;
   flex-direction: column;
-  background: rgba(17, 24, 39, 0.94);
+  background: rgba(22, 24, 31, 0.96);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-left: 1px solid var(--border-subtle);

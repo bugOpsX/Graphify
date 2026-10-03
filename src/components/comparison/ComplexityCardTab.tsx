@@ -45,7 +45,7 @@ export const ComplexityCardTab: React.FC<ComplexityCardTabProps> = ({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Zap size={15} color={isKruskal ? '#3b82f6' : '#10b981'} />
+          <Zap size={15} color={isKruskal ? 'var(--color-primary)' : 'var(--edge-accepted)'} />
           <div>
             <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-primary)' }}>
               {isKruskal ? "Kruskal's Asymptotic Complexity: O(E log E)" : "Prim's Asymptotic Complexity: O(E log V)"}
@@ -65,9 +65,9 @@ export const ComplexityCardTab: React.FC<ComplexityCardTabProps> = ({
               display: 'inline-flex',
               alignItems: 'center',
               gap: '4px',
-              background: 'rgba(59, 130, 246, 0.15)',
+              background: 'var(--color-primary-subtle)',
               border: '1px solid rgba(59, 130, 246, 0.35)',
-              color: '#60a5fa',
+              color: 'var(--color-primary)',
               padding: '2px 8px',
               borderRadius: '4px',
               cursor: 'pointer',
@@ -111,7 +111,7 @@ export const ComplexityCardTab: React.FC<ComplexityCardTabProps> = ({
           <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem', fontWeight: 600, textTransform: 'uppercase' }}>
             Current Operations
           </div>
-          <div style={{ color: isKruskal ? '#60a5fa' : '#34d399', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
+          <div style={{ color: isKruskal ? 'var(--color-primary)' : 'var(--color-success)', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
             {(isKruskal ? kruskalOps : primOps).toFixed(1)} theoretical ops
           </div>
         </div>
