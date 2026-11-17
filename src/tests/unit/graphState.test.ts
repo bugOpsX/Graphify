@@ -75,4 +75,48 @@ describe('Vertex Deletion & Graph State Management', () => {
     expect(kruskalTrace.result.mstEdges).toEqual([]);
     expect(primTrace.result.mstEdges).toEqual([]);
   });
+
+  it('should generate valid, connected graphs for all random graph topologies and compute valid MSTs', () => {
+    const { result } = renderHook(() => useGraphState());
+    const topologies = [
+      'grid',
+      'clusters',
+      'scale_free',
+      'bipartite',
+      'large_network',
+      'sparse',
+      'dense',
+      'ring_cycle',
+    ] as const;
+
+    for (const topo of topologies) {
+      act(() => {
+        result.current.generateRandom(topo === 'large_network' ? 18 : 10, topo);
+      });
+
+      const currentGraph = result.current.graph;
+      expect(currentGraph.vertices.length).toBeGreaterThanOrEqual(5);
+      expect(currentGraph.edges.length).toBeGreaterThan(0);
+
+      // Verify no self loops
+      expect(currentGraph.edges.every((e) => e.source !== e.target)).toBe(true);
+
+      // Verify all vertices have positive coordinates
+      expect(currentGraph.vertices.every((v) => v.x > 0 && v.y > 0)).toBe(true);
+
+      // Verify validation passes
+      expect(result.current.validation.isValid).toBe(true);
+
+      // Kruskal and Prim should execute cleanly and find a complete MST
+      const kruskal = runKruskal(currentGraph);
+      const prim = runPrim(currentGraph);
+
+      expect(kruskal.result.isCompleteMST).toBe(true);
+      expect(prim.result.isCompleteMST).toBe(true);
+      expect(kruskal.result.mstEdges.length).toBe(currentGraph.vertices.length - 1);
+      expect(prim.result.mstEdges.length).toBe(currentGraph.vertices.length - 1);
+      expect(kruskal.result.totalWeight).toBe(prim.result.totalWeight);
+    }
+  });
 });
+

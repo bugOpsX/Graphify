@@ -1,7 +1,13 @@
 import { useState, useCallback } from 'react';
 import type { Graph, Vertex, Edge } from '../core/types';
 import { PRESET_GRAPHS } from '../core/presets';
-import { generateRandomGraph, validateGraph, type GraphValidationResult } from '../core/graphUtils';
+import {
+  generateRandomGraph,
+  validateGraph,
+  type GraphValidationResult,
+  type RandomGraphTopology,
+  type RandomGraphOptions,
+} from '../core/graphUtils';
 
 export interface GraphStateControls {
   graph: Graph;
@@ -11,7 +17,10 @@ export interface GraphStateControls {
   setMode: (mode: 'SELECT' | 'ADD_VERTEX' | 'ADD_EDGE') => void;
   setSelectedVertexId: (id: string | null) => void;
   loadPreset: (presetId: string) => void;
-  generateRandom: (vertexCount?: number) => void;
+  generateRandom: (
+    nodeCountOrOptions?: number | RandomGraphOptions,
+    topology?: RandomGraphTopology
+  ) => void;
   addVertex: (x: number, y: number) => void;
   deleteVertex: (id: string) => void;
   addEdge: (sourceId: string, targetId: string, weight?: number) => void;
@@ -40,12 +49,18 @@ export function useGraphState(initialPresetId: string = 'preset-standard'): Grap
     }
   }, []);
 
-  const generateRandom = useCallback((vertexCount: number = 6) => {
-    const randomGraph = generateRandomGraph(vertexCount);
-    setGraph(randomGraph);
-    setInitialGraphSnapshot(randomGraph);
-    setSelectedVertexId(null);
-  }, []);
+  const generateRandom = useCallback(
+    (
+      nodeCountOrOptions?: number | RandomGraphOptions,
+      topology?: RandomGraphTopology
+    ) => {
+      const randomGraph = generateRandomGraph(nodeCountOrOptions, topology);
+      setGraph(randomGraph);
+      setInitialGraphSnapshot(randomGraph);
+      setSelectedVertexId(null);
+    },
+    []
+  );
 
   const addVertex = useCallback((x: number, y: number) => {
     setGraph((prev) => {

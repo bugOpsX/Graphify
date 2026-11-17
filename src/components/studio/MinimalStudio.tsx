@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   MousePointer,
   PlusCircle,
@@ -13,6 +13,9 @@ import {
   SkipForward,
   RotateCw,
   TrendingUp,
+  Maximize2,
+  Minimize2,
+  Layers,
 } from 'lucide-react';
 import { SVGCanvas } from '../graph/SVGCanvas';
 import { PRESET_GRAPHS } from '../../core/presets';
@@ -29,6 +32,99 @@ import { AIChatToggleBtn } from '../ai/AIChatToggleBtn';
 import type { GraphStateControls } from '../../visualization/useGraphState';
 import type { ExecutionTrace } from '../../core/types';
 import type { PlaybackControls } from '../../visualization/usePlayback';
+import type { RandomGraphTopology } from '../../core/graphUtils';
+
+interface TopologyItem {
+  id: RandomGraphTopology;
+  name: string;
+  badge: string;
+  desc: string;
+  defaultNodes: number;
+  icon: string;
+}
+
+const TOPOLOGY_OPTIONS: TopologyItem[] = [
+  {
+    id: 'random',
+    name: 'Adaptive Random',
+    badge: 'Surprise',
+    desc: 'Randomized layout and density, guaranteed connected',
+    defaultNodes: 8,
+    icon: '🎲',
+  },
+  {
+    id: 'large_network',
+    name: 'Large Complex Network',
+    badge: '18 Nodes',
+    desc: '3-tier mesh with 30+ edges, ideal for full screen',
+    defaultNodes: 18,
+    icon: '🔬',
+  },
+  {
+    id: 'grid',
+    name: '2D Grid Lattice Mesh',
+    badge: '12 Nodes',
+    desc: 'Planar 4x3 matrix with horizontal & vertical connections',
+    defaultNodes: 12,
+    icon: '🔲',
+  },
+  {
+    id: 'clusters',
+    name: 'Community Clusters',
+    badge: '12 Nodes',
+    desc: 'Two dense clusters connected by a critical bridge edge',
+    defaultNodes: 12,
+    icon: '🪐',
+  },
+  {
+    id: 'scale_free',
+    name: 'Hub & Spoke Network',
+    badge: '10 Nodes',
+    desc: 'Central hubs with orbiting satellites and cross-spokes',
+    defaultNodes: 10,
+    icon: '🌟',
+  },
+  {
+    id: 'bipartite',
+    name: 'Bipartite Graph',
+    badge: '10 Nodes',
+    desc: 'Two disjoint vertex partitions with cross-cutting edges',
+    defaultNodes: 10,
+    icon: '↔️',
+  },
+  {
+    id: 'dense',
+    name: 'Dense Complete Clique',
+    badge: '7 Nodes',
+    desc: 'High edge density (~85%) showcasing Prim efficiency',
+    defaultNodes: 7,
+    icon: '⚡',
+  },
+  {
+    id: 'sparse',
+    name: 'Sparse Planar Web',
+    badge: '8 Nodes',
+    desc: 'Low edge density with tree backbone and few chords',
+    defaultNodes: 8,
+    icon: '🌐',
+  },
+  {
+    id: 'ring_cycle',
+    name: 'Ring Cycle & Chords',
+    badge: '8 Nodes',
+    desc: 'Perimeter cycle with cross-cutting diametric shortcuts',
+    defaultNodes: 8,
+    icon: '🔄',
+  },
+];
+
+const PRESET_ICONS: Record<string, string> = {
+  'preset-standard': '📐',
+  'preset-dense': '💎',
+  'preset-cycle': '🔄',
+  'preset-disconnected': '🏝️',
+};
+
 
 interface MinimalStudioProps {
   graphState: GraphStateControls;
@@ -53,6 +149,7 @@ export const MinimalStudio: React.FC<MinimalStudioProps> = ({
   onStartVertexChange,
   onEdgeClick,
   viewMode,
+  onViewModeChange,
 }) => {
   const {
     graph,
@@ -71,9 +168,13 @@ export const MinimalStudio: React.FC<MinimalStudioProps> = ({
   } = graphState;
 
   const [isPresetsMenuOpen, setIsPresetsMenuOpen] = useState<boolean>(false);
+  const [presetTab, setPresetTab] = useState<'presets' | 'random'>('presets');
+  const [isCanvasFullscreen, setIsCanvasFullscreen] = useState<boolean>(false);
   const [isAIChatOpen, setIsAIChatOpen] = useState<boolean>(false);
   const [splitWidth, setSplitWidth] = useState<number>(460);
   const [inspectorHeight, setInspectorHeight] = useState<number>(250);
+
+  const presetsMenuRef = useRef<HTMLDivElement | null>(null);
 
   // Tab selections in side-by-side mode cards
   const [kruskalTab, setKruskalTab] = useState<'EXPLANATION' | 'DSU' | 'METRICS' | 'GRAPH'>('EXPLANATION');
@@ -84,6 +185,71 @@ export const MinimalStudio: React.FC<MinimalStudioProps> = ({
   // Current steps
   const kruskalStep = kruskalTrace.steps[kruskalPlayback.currentStepIndex] || kruskalTrace.steps[0];
   const primStep = primTrace.steps[primPlayback.currentStepIndex] || primTrace.steps[0];
+
+  // Close menus on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (presetsMenuRef.current && !presetsMenuRef.current.contains(e.target as Node)) {
+        setIsPresetsMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Sync with browser native fullscreen exit
+  useEffect(() => {
+    const handleBrowserFullscreenChange = () => {
+      if (!document.fullscreenElement && isCanvasFullscreen) {
+        setIsCanvasFullscreen(false);
+      }
+    };
+    document.addEventListener('fullscreenchange', handleBrowserFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleBrowserFullscreenChange);
+  }, [isCanvasFullscreen]);
+
+  const handleSelectTopology = (topo: RandomGraphTopology, count?: number) => {
+    const defaultNodeCount = TOPOLOGY_OPTIONS.find((t) => t.id === topo)?.defaultNodes || 8;
+    generateRandom(count || defaultNodeCount, topo);
+    kruskalPlayback.reset();
+    primPlayback.reset();
+    setIsPresetsMenuOpen(false);
+  };
+
+  const handleToggleFullscreen = () => {
+    setIsCanvasFullscreen((prev) => {
+      const nextState = !prev;
+      if (nextState) {
+        try {
+          if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(() => {});
+          }
+        } catch {
+          // Handled gracefully
+        }
+      } else {
+        try {
+          if (document.fullscreenElement && document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+          }
+        } catch {
+          // Handled gracefully
+        }
+      }
+      return nextState;
+    });
+  };
+
+  const handleCloseFullscreen = () => {
+    setIsCanvasFullscreen(false);
+    try {
+      if (document.fullscreenElement && document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      }
+    } catch {
+      // Handled gracefully
+    }
+  };
 
   // Minimal and intuitive vertex deletion handler
   const handleDeleteVertex = useCallback((vertexId?: string | null) => {
@@ -102,21 +268,34 @@ export const MinimalStudio: React.FC<MinimalStudioProps> = ({
     primPlayback.reset();
   }, [selectedVertexId, startVertexId, graph.vertices, deleteVertex, setSelectedVertexId, onStartVertexChange, kruskalPlayback, primPlayback]);
 
-  // Keyboard shortcut: Backspace or Delete to remove the currently selected vertex
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (isAIChatOpen) {
-          setIsAIChatOpen(false);
-          return;
-        }
-      }
-
-      // Do not delete vertex if typing in an input or textarea
       if (
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement
       ) {
+        return;
+      }
+
+      if (e.key === 'Escape') {
+        if (isCanvasFullscreen) {
+          handleCloseFullscreen();
+          return;
+        }
+        if (isAIChatOpen) {
+          setIsAIChatOpen(false);
+          return;
+        }
+        if (isPresetsMenuOpen) {
+          setIsPresetsMenuOpen(false);
+          return;
+        }
+      }
+
+      if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        handleToggleFullscreen();
         return;
       }
 
@@ -130,7 +309,7 @@ export const MinimalStudio: React.FC<MinimalStudioProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedVertexId, handleDeleteVertex]);
+  }, [isCanvasFullscreen, isAIChatOpen, isPresetsMenuOpen, selectedVertexId, handleDeleteVertex]);
 
   const handleVertexClick = (vertexId: string) => {
     if (mode === 'ADD_EDGE') {
@@ -231,82 +410,101 @@ export const MinimalStudio: React.FC<MinimalStudioProps> = ({
 
           <div className="mst-subtoolbar-divider" />
 
-          {/* Preset Dropdown */}
-          <div style={{ position: 'relative' }}>
+          {/* Unified Preset & Topology Graph Selector */}
+          <div style={{ position: 'relative' }} ref={presetsMenuRef}>
             <button
               className="mst-pill-btn"
-              onClick={() => setIsPresetsMenuOpen(!isPresetsMenuOpen)}
-              title="Load textbook graph presets"
+              onClick={() => setIsPresetsMenuOpen((prev) => !prev)}
+              title="Load textbook presets or generate random graph topologies"
+              aria-expanded={isPresetsMenuOpen}
             >
+              <Layers size={13} />
               <span>Preset Graphs</span>
-              <ChevronDown size={13} />
+              <ChevronDown size={12} />
             </button>
 
             {isPresetsMenuOpen && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '100%',
-                  right: 0,
-                  marginTop: '4px',
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: 'var(--radius-md)',
-                  boxShadow: 'var(--shadow-card)',
-                  zIndex: 40,
-                  minWidth: '240px',
-                  overflow: 'hidden',
-                }}
-              >
-                {PRESET_GRAPHS.map((p) => (
+              <div className="mst-presets-menu">
+                <div className="mst-presets-tabs-header">
                   <button
-                    key={p.id}
-                    onClick={() => {
-                      loadPreset(p.id);
-                      setIsPresetsMenuOpen(false);
-                      kruskalPlayback.reset();
-                      primPlayback.reset();
-                    }}
-                    style={{
-                      width: '100%',
-                      padding: '0.6rem 0.85rem',
-                      textAlign: 'left',
-                      fontSize: '0.78rem',
-                      color: 'var(--text-primary)',
-                      background: 'transparent',
-                      border: 'none',
-                      borderBottom: '1px solid var(--border-subtle)',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '2px',
-                      transition: 'background 0.15s ease',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-hover)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                    className={`mst-presets-tab-btn ${presetTab === 'presets' ? 'active' : ''}`}
+                    onClick={() => setPresetTab('presets')}
                   >
-                    <span style={{ fontWeight: 600 }}>{p.name}</span>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
-                      {p.graph.vertices.length} vertices &bull; {p.graph.edges.length} edges
-                    </span>
+                    <Layers size={12} />
+                    <span>Textbook Presets</span>
                   </button>
-                ))}
+                  <button
+                    className={`mst-presets-tab-btn ${presetTab === 'random' ? 'active' : ''}`}
+                    onClick={() => setPresetTab('random')}
+                  >
+                    <Shuffle size={12} />
+                    <span>Random Topologies</span>
+                  </button>
+                </div>
+
+                {presetTab === 'presets' ? (
+                  <div className="mst-presets-list">
+                    {PRESET_GRAPHS.map((p) => (
+                      <button
+                        key={p.id}
+                        className="mst-random-item"
+                        onClick={() => {
+                          loadPreset(p.id);
+                          setIsPresetsMenuOpen(false);
+                          kruskalPlayback.reset();
+                          primPlayback.reset();
+                        }}
+                      >
+                        <span className="mst-random-item-icon">
+                          {PRESET_ICONS[p.id] || '📐'}
+                        </span>
+                        <div className="mst-random-item-content">
+                          <span className="mst-random-item-name">{p.name}</span>
+                          <span className="mst-random-item-desc">{p.description}</span>
+                        </div>
+                        <span className="mst-random-item-badge">
+                          {p.graph.vertices.length}V &bull; {p.graph.edges.length}E
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mst-presets-list">
+                    {TOPOLOGY_OPTIONS.map((topo) => (
+                      <button
+                        key={topo.id}
+                        className="mst-random-item"
+                        onClick={() => handleSelectTopology(topo.id, topo.defaultNodes)}
+                      >
+                        <span className="mst-random-item-icon">{topo.icon}</span>
+                        <div className="mst-random-item-content">
+                          <span className="mst-random-item-name">{topo.name}</span>
+                          <span className="mst-random-item-desc">{topo.desc}</span>
+                        </div>
+                        <span className="mst-random-item-badge">{topo.badge}</span>
+                      </button>
+                    ))}
+
+                    <div className="mst-random-menu-footer">
+                      <span className="mst-random-footer-label">Quick Sizes:</span>
+                      <div className="mst-count-pills-group">
+                        {[6, 8, 12, 16, 20].map((count) => (
+                          <button
+                            key={count}
+                            className="mst-count-pill"
+                            onClick={() => handleSelectTopology('random', count)}
+                            title={`Generate ${count}-node random graph`}
+                          >
+                            {count}N
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
-
-          <button
-            className="mst-pill-btn"
-            onClick={() => {
-              generateRandom();
-              kruskalPlayback.reset();
-              primPlayback.reset();
-            }}
-            title="Generate a connected random graph"
-          >
-            <Shuffle size={13} />
-            <span>Random Graph</span>
-          </button>
 
           <button
             className="mst-pill-btn"
@@ -339,7 +537,16 @@ export const MinimalStudio: React.FC<MinimalStudioProps> = ({
               <div className="mst-algo-card-title-group">
                 <span className="mst-algo-title">Kruskal's Algorithm</span>
                 <span className="mst-algo-badge">Edge-Centric DSU</span>
+                <span className="mst-weight-chip">MST: {kruskalStep.currentWeight}</span>
               </div>
+              <button
+                className="mst-card-fullscreen-btn"
+                onClick={handleToggleFullscreen}
+                title="Maximize canvas to full screen (F)"
+              >
+                <Maximize2 size={12} />
+                <span>Full Screen</span>
+              </button>
             </div>
 
             {/* Kruskal Canvas */}
@@ -534,10 +741,19 @@ export const MinimalStudio: React.FC<MinimalStudioProps> = ({
               <div className="mst-algo-card-title-group">
                 <span className="mst-algo-title">Prim's Algorithm</span>
                 <span className="mst-algo-badge">Vertex-Centric Cut</span>
+                <span className="mst-weight-chip">MST: {primStep.currentWeight}</span>
+                <span className="mst-algo-start-chip">
+                  Start: {graph.vertices.find((v) => v.id === startVertexId)?.label || graph.vertices[0]?.label || 'A'}
+                </span>
               </div>
-              <span className="mst-algo-start-chip">
-                Start: {graph.vertices.find((v) => v.id === startVertexId)?.label || graph.vertices[0]?.label || 'A'}
-              </span>
+              <button
+                className="mst-card-fullscreen-btn"
+                onClick={handleToggleFullscreen}
+                title="Maximize canvas to full screen (F)"
+              >
+                <Maximize2 size={12} />
+                <span>Full Screen</span>
+              </button>
             </div>
 
             {/* Prim Canvas */}
@@ -732,7 +948,17 @@ export const MinimalStudio: React.FC<MinimalStudioProps> = ({
       {(viewMode === 'SINGLE_KRUSKAL' || viewMode === 'SINGLE_PRIM') && (
         <div className="studio-split-layout">
           {/* Left Column: Full-Height Interactive Canvas */}
-          <div className="studio-split-canvas">
+          <div className="studio-split-canvas" style={{ position: 'relative' }}>
+            <button
+              className="mst-card-fullscreen-btn"
+              onClick={handleToggleFullscreen}
+              style={{ position: 'absolute', top: '10px', right: '14px', zIndex: 10 }}
+              title="Open canvas in full screen (F)"
+            >
+              <Maximize2 size={12} />
+              <span>Full Screen</span>
+            </button>
+
             {viewMode === 'SINGLE_KRUSKAL' ? (
               <SVGCanvas
                 graph={graph}
@@ -800,6 +1026,292 @@ export const MinimalStudio: React.FC<MinimalStudioProps> = ({
                 primStepIndex={primPlayback.currentStepIndex}
                 viewMode={viewMode}
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Full Screen Canvas Workbench Overlay */}
+      {isCanvasFullscreen && (
+        <div
+          className="mst-fullscreen-workbench"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Full Screen Canvas Workbench"
+        >
+          {/* Full Screen Top Navigation Bar */}
+          <div className="mst-fullscreen-header">
+            <div className="mst-fullscreen-header-left">
+              <div className="mst-fullscreen-title-group">
+                <Maximize2 size={16} color="var(--color-primary)" />
+                <span className="mst-fullscreen-title">Full Screen Canvas</span>
+                <span className="mst-fullscreen-stats">
+                  {graph.vertices.length} Nodes &bull; {graph.edges.length} Edges
+                </span>
+              </div>
+            </div>
+
+            {/* Visualizer View Switcher right inside Fullscreen */}
+            <div className="mst-fullscreen-switcher">
+              <button
+                className={`mst-pill-btn ${viewMode === 'SIDE_BY_SIDE' ? 'active' : ''}`}
+                onClick={() => onViewModeChange?.('SIDE_BY_SIDE')}
+                title="Side-by-side comparison visualizer"
+              >
+                <span>Side-by-Side</span>
+              </button>
+              <button
+                className={`mst-pill-btn ${viewMode === 'SINGLE_KRUSKAL' ? 'active' : ''}`}
+                onClick={() => onViewModeChange?.('SINGLE_KRUSKAL')}
+                title="Individual Kruskal visualizer"
+              >
+                <span>Kruskal</span>
+              </button>
+              <button
+                className={`mst-pill-btn ${viewMode === 'SINGLE_PRIM' ? 'active' : ''}`}
+                onClick={() => onViewModeChange?.('SINGLE_PRIM')}
+                title="Individual Prim visualizer"
+              >
+                <span>Prim</span>
+              </button>
+            </div>
+
+            {/* Header Right: Edit Modes & Exit Fullscreen Button */}
+            <div className="mst-fullscreen-header-right">
+              {/* Quick Topology Generator inside Fullscreen */}
+              <button
+                className="mst-pill-btn"
+                onClick={() => handleSelectTopology('random')}
+                title="Generate new adaptive random graph"
+              >
+                <Shuffle size={13} />
+                <span>Generate Graph</span>
+              </button>
+
+              {/* Close Full Screen Button */}
+              <button
+                className="mst-pill-btn mst-fullscreen-close-btn"
+                onClick={handleCloseFullscreen}
+                title="Close Full Screen Canvas and return to Studio (Esc)"
+              >
+                <Minimize2 size={13} />
+                <span>Close Full Screen</span>
+                <kbd className="mst-kbd-shortcut">Esc</kbd>
+              </button>
+            </div>
+          </div>
+
+          {/* Full Screen Canvas Content Body */}
+          <div className="mst-fullscreen-canvas-body">
+            {viewMode === 'SIDE_BY_SIDE' ? (
+              <div className="mst-fullscreen-dual-grid">
+                {/* Kruskal Maximized Card */}
+                <div className="mst-fullscreen-algo-card">
+                  <div className="mst-algo-card-header">
+                    <div className="mst-algo-card-title-group">
+                      <span className="mst-algo-title">Kruskal's Algorithm</span>
+                      <span className="mst-algo-badge">Edge-Centric DSU</span>
+                      <span className="mst-weight-chip">MST Weight: {kruskalStep.currentWeight}</span>
+                    </div>
+                  </div>
+                  <div className="mst-fullscreen-svg-wrap">
+                    <SVGCanvas
+                      graph={graph}
+                      currentStep={kruskalStep}
+                      mode={mode}
+                      selectedVertexId={selectedVertexId}
+                      onCanvasClick={handleCanvasClick}
+                      onVertexClick={handleVertexClick}
+                      onVertexMove={moveVertex}
+                      onEdgeClick={onEdgeClick}
+                      onVertexDelete={handleDeleteVertex}
+                    />
+                  </div>
+                </div>
+
+                {/* Prim Maximized Card */}
+                <div className="mst-fullscreen-algo-card">
+                  <div className="mst-algo-card-header">
+                    <div className="mst-algo-card-title-group">
+                      <span className="mst-algo-title">Prim's Algorithm</span>
+                      <span className="mst-algo-badge">Vertex-Centric Cut</span>
+                      <span className="mst-weight-chip">MST Weight: {primStep.currentWeight}</span>
+                      <span className="mst-algo-start-chip">
+                        Start: {graph.vertices.find((v) => v.id === startVertexId)?.label || graph.vertices[0]?.label || 'A'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mst-fullscreen-svg-wrap">
+                    <SVGCanvas
+                      graph={graph}
+                      currentStep={primStep}
+                      mode={mode}
+                      selectedVertexId={selectedVertexId}
+                      onCanvasClick={handleCanvasClick}
+                      onVertexClick={handleVertexClick}
+                      onVertexMove={moveVertex}
+                      onEdgeClick={onEdgeClick}
+                      onVertexDelete={handleDeleteVertex}
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Single Full Screen Canvas (Kruskal or Prim) */
+              <div className="mst-fullscreen-single-card">
+                <div className="mst-algo-card-header">
+                  <div className="mst-algo-card-title-group">
+                    <span className="mst-algo-title">
+                      {viewMode === 'SINGLE_KRUSKAL' ? "Kruskal's Algorithm Fullscreen" : "Prim's Algorithm Fullscreen"}
+                    </span>
+                    <span className="mst-algo-badge">
+                      {viewMode === 'SINGLE_KRUSKAL' ? 'Edge-Centric DSU' : 'Vertex-Centric Cut'}
+                    </span>
+                    <span className="mst-weight-chip">
+                      MST Weight: {viewMode === 'SINGLE_KRUSKAL' ? kruskalStep.currentWeight : primStep.currentWeight}
+                    </span>
+                    {viewMode === 'SINGLE_PRIM' && (
+                      <span className="mst-algo-start-chip">
+                        Start: {graph.vertices.find((v) => v.id === startVertexId)?.label || graph.vertices[0]?.label || 'A'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="mst-fullscreen-svg-wrap">
+                  <SVGCanvas
+                    graph={graph}
+                    currentStep={viewMode === 'SINGLE_KRUSKAL' ? kruskalStep : primStep}
+                    mode={mode}
+                    selectedVertexId={selectedVertexId}
+                    onCanvasClick={handleCanvasClick}
+                    onVertexClick={handleVertexClick}
+                    onVertexMove={moveVertex}
+                    onEdgeClick={onEdgeClick}
+                    onVertexDelete={handleDeleteVertex}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Floating Bottom Playback HUD in Fullscreen */}
+          <div className="mst-fullscreen-hud">
+            <div className="mst-fullscreen-hud-inner">
+              <div className="mst-playback-left">
+                <button
+                  className="mst-btn-icon"
+                  onClick={() => {
+                    kruskalPlayback.reset();
+                    primPlayback.reset();
+                  }}
+                  title="Restart (R)"
+                >
+                  <RotateCw size={14} />
+                </button>
+                <button
+                  className="mst-btn-icon"
+                  onClick={() => {
+                    if (viewMode === 'SINGLE_PRIM') primPlayback.stepBackward();
+                    else kruskalPlayback.stepBackward();
+                  }}
+                  disabled={
+                    viewMode === 'SINGLE_PRIM'
+                      ? primPlayback.currentStepIndex === 0
+                      : kruskalPlayback.currentStepIndex === 0
+                  }
+                  title="Step Back (Left Arrow)"
+                >
+                  <SkipBack size={14} />
+                </button>
+                <button
+                  className="mst-btn-play-card"
+                  onClick={() => {
+                    if (viewMode === 'SIDE_BY_SIDE') {
+                      if (kruskalPlayback.isPlaying || primPlayback.isPlaying) {
+                        kruskalPlayback.pause();
+                        primPlayback.pause();
+                      } else {
+                        kruskalPlayback.play();
+                        primPlayback.play();
+                      }
+                    } else if (viewMode === 'SINGLE_PRIM') {
+                      primPlayback.togglePlay();
+                    } else {
+                      kruskalPlayback.togglePlay();
+                    }
+                  }}
+                  title="Play / Pause (Space)"
+                >
+                  {(viewMode === 'SINGLE_PRIM' ? primPlayback.isPlaying : kruskalPlayback.isPlaying) ? (
+                    <Pause size={14} />
+                  ) : (
+                    <Play size={14} />
+                  )}
+                </button>
+                <button
+                  className="mst-btn-icon"
+                  onClick={() => {
+                    if (viewMode === 'SINGLE_PRIM') primPlayback.stepForward();
+                    else kruskalPlayback.stepForward();
+                  }}
+                  disabled={
+                    viewMode === 'SINGLE_PRIM'
+                      ? primPlayback.currentStepIndex >= primTrace.steps.length - 1
+                      : kruskalPlayback.currentStepIndex >= kruskalTrace.steps.length - 1
+                  }
+                  title="Step Forward (Right Arrow)"
+                >
+                  <SkipForward size={14} />
+                </button>
+              </div>
+
+              {/* Scrubber slider */}
+              <div className="mst-playback-center" style={{ flex: 1, minWidth: '180px' }}>
+                <span className="mst-step-counter">
+                  Step {((viewMode === 'SINGLE_PRIM' ? primPlayback.currentStepIndex : kruskalPlayback.currentStepIndex) + 1)} / {(viewMode === 'SINGLE_PRIM' ? primTrace.steps.length : kruskalTrace.steps.length)}
+                </span>
+                <input
+                  type="range"
+                  min={0}
+                  max={Math.max(0, (viewMode === 'SINGLE_PRIM' ? primTrace.steps.length : kruskalTrace.steps.length) - 1)}
+                  value={viewMode === 'SINGLE_PRIM' ? primPlayback.currentStepIndex : kruskalPlayback.currentStepIndex}
+                  onChange={(e) => {
+                    const step = Number(e.target.value);
+                    if (viewMode === 'SIDE_BY_SIDE') {
+                      kruskalPlayback.goToStep(step);
+                      primPlayback.goToStep(step);
+                    } else if (viewMode === 'SINGLE_PRIM') {
+                      primPlayback.goToStep(step);
+                    } else {
+                      kruskalPlayback.goToStep(step);
+                    }
+                  }}
+                  className="mst-scrubber-slider"
+                />
+              </div>
+
+              {/* Explanation Text Pill */}
+              <div className="mst-fullscreen-hud-explanation">
+                <span className="mst-hud-explanation-text">
+                  {viewMode === 'SINGLE_PRIM' ? primStep.explanation : kruskalStep.explanation}
+                </span>
+              </div>
+
+              {/* Speeds */}
+              <div className="mst-playback-right">
+                {speeds.map((s) => (
+                  <button
+                    key={s}
+                    className={`mst-speed-btn ${(viewMode === 'SINGLE_PRIM' ? primPlayback.speed : kruskalPlayback.speed) === s ? 'active' : ''}`}
+                    onClick={() => {
+                      kruskalPlayback.setSpeed(s);
+                      primPlayback.setSpeed(s);
+                    }}
+                  >
+                    {s}x
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>

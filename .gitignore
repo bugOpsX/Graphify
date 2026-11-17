@@ -74,3 +74,4 @@ Desktop.ini
 stitch_mst_lab_visualizer/
 *.zip
 *.mp4
+!vid-updated.mp4

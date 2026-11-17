@@ -16,6 +16,7 @@ import {
   Compass,
 } from 'lucide-react';
 import { FinanciluxHeroVisual } from './FinanciluxHeroVisual';
+import { VideoModal } from './VideoModal';
 
 interface MinimalHomeProps {
   onOpenVisualizer: () => void;
@@ -41,6 +42,7 @@ export const MinimalHome: React.FC<MinimalHomeProps> = ({
     'ALL' | 'Basics' | 'Algorithms' | 'Theory' | 'Applications'
   >('ALL');
   const [showAllFaqs, setShowAllFaqs] = useState<boolean>(false);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState<boolean>(false);
 
   const toggleFaq = (question: string) => {
     setOpenFaqQuestion((prev) => (prev === question ? null : question));
@@ -331,12 +333,12 @@ export const MinimalHome: React.FC<MinimalHomeProps> = ({
 
               <button
                 className="fin-btn-outline-play"
-                onClick={() => onScrollToSection('arena')}
+                onClick={() => setIsVideoModalOpen(true)}
               >
                 <span className="fin-play-icon-circle">
                   <Play size={11} fill="currentColor" />
                 </span>
-                <span>See demo</span>
+                <span>Learn here</span>
               </button>
             </div>
           </div>
@@ -729,6 +731,11 @@ export const MinimalHome: React.FC<MinimalHomeProps> = ({
           </div>
         </footer>
       </div>
+
+      <VideoModal
+        isOpen={isVideoModalOpen}
+        onClose={() => setIsVideoModalOpen(false)}
+      />
     </main>
   );
 };
